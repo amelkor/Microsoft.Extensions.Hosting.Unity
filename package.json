@@ -5,7 +5,7 @@
     "url": "http://amelkor.com"
   },
   "displayName": "Microsoft.Extensions.Hosting for Unity",
-  "description": "Microsoft.Extensions.Hosting adopted for Unity",
+  "description": "Microsoft.Extensions.Hosting adopted for Unity. The documentation can be found here: (Tutorial: Use dependency injection in .NET) https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage",
   "unity": "2019.4",
   "release": "0f1",
   "version": "1.0.0",
