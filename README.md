@@ -113,4 +113,4 @@ Then create a new GameObject and attach the script.
 
 ## Licensing
 - The asset: MIT License, see  [LICENSE.md](LICENSE.md) for more information.
-- .NET libraries: MIT License, see  [Runtime/lib/LICENSE.md](Runtime/lib/LICENSE.md) for more information.
+- .NET libraries: MIT License, see  [Runtime/lib/LICENSE.md](Runtime/lib/LICENSE.txt) for more information.
