@@ -1,0 +1,26 @@
+{
+  "name": "microsoft.extensions.hosting.unity",
+  "author": {
+    "name": "amelkor",
+    "url": "http://amelkor.com"
+  },
+  "displayName": "Microsoft.Extensions.Hosting for Unity",
+  "description": "Microsoft.Extensions.Hosting adopted for Unity",
+  "unity": "2019.4",
+  "release": "0f1",
+  "version": "1.0.0",
+  "keywords": [
+    "unity",
+    "integration",
+    "workflow",
+    "DI",
+    "hosting"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amelkor/bsr-unity-subsystemcontainer.git"
+  },
+  "type": "library",
+  "dependencies": {
+  }
+}
