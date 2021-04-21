@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.Unity.Logging;
 using Microsoft.Extensions.Logging;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Microsoft.Extensions.Hosting.Unity
 {
@@ -20,46 +22,55 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         [Tooltip("If false, " + nameof(BuildManually) + "() method needs to be called to build the host")]
         [SerializeField] private bool buildOnAwake = true;
-        
+
         [Header("Logging")]
         [Tooltip("Use Unity Debug.Log to print log messages")]
         [SerializeField] private bool logToUnity = true;
-        
+
         [Tooltip("Will suppress host lifetime messages logging if set to true")]
         [SerializeField] private bool suppressStatusMessages;
 
+        [Header("Events")]
+        [SerializeField] private UnityEvent hostBuilt;
+        [SerializeField] private UnityEvent hostStarted;
+        [SerializeField] private UnityEvent hostStopping;
+        [SerializeField] private UnityEvent hostStopped;
+        
         private IHostBuilder _hostBuilder;
         private IHost _host;
 
         private bool _isBuilt;
         private bool _isStarted;
-        
-        protected virtual void OnAwake(){}
-        protected virtual void OnStart(){}
+
+        protected virtual void OnAwake()
+        {
+        }
+
+        protected virtual void OnStart()
+        {
+        }
+
         protected abstract void ConfigureAppConfiguration(IConfigurationBuilder builder);
         protected abstract void ConfigureLogging(ILoggingBuilder builder);
         protected abstract void ConfigureServices(IServiceCollection services);
         protected abstract void ConfigureMonoBehaviours(IMonoBehaviourServiceCollectionBuilder services);
-        
+
         private void Awake()
         {
             _hostBuilder = UnityHost.CreateDefaultBuilder(servicesInjectionMethodName);
             _hostBuilder.ConfigureLogging(ConfigureLogging);
-            
+
             if (logToUnity)
                 _hostBuilder.ConfigureLogging(builder => builder.AddUnityLogger());
-            
+
             _hostBuilder.ConfigureAppConfiguration(ConfigureAppConfiguration);
-            _hostBuilder.ConfigureServices(services =>
-            {
-                services.SuppressStatusMessages(suppressStatusMessages);
-            });
+            _hostBuilder.ConfigureServices(services => { services.SuppressStatusMessages(suppressStatusMessages); });
 
             _hostBuilder.ConfigureServices(ConfigureServices);
             _hostBuilder.ConfigureMonoBehaviours(ConfigureMonoBehaviours);
-            
+
             OnAwake();
-            
+
             if (buildOnAwake)
                 BuildHost();
         }
@@ -83,7 +94,7 @@ namespace Microsoft.Extensions.Hosting.Unity
 
             BuildHost();
         }
-        
+
         #region Public API methods
 
         private void BuildHost()
@@ -92,6 +103,19 @@ namespace Microsoft.Extensions.Hosting.Unity
             {
                 _isBuilt = true;
                 _host = _hostBuilder.Build();
+
+                var lifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
+                
+                if (hostStarted != null)
+                    lifetime.ApplicationStarted.Register(hostStarted.Invoke);
+                
+                if (hostStopping != null)
+                    lifetime.ApplicationStopping.Register(hostStopping.Invoke);
+                
+                if (hostStopped != null)
+                    lifetime.ApplicationStopped.Register(hostStopped.Invoke);
+
+                hostBuilt?.Invoke();
             }
             catch (Exception)
             {
@@ -102,12 +126,12 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         #endregion
 
-        #region Host control by Unity events 
+        #region Host control by Unity events
 
         public async void Start()
         {
             OnStart();
-            
+
             if (_isBuilt)
             {
                 await StartHostAsync();
@@ -139,7 +163,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     Debug.LogWarning("The Host is already started");
                     return;
                 }
-                
+
                 _isStarted = true;
                 _host.Start();
             }
@@ -149,7 +173,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 throw;
             }
         }
-        
+
         private async Task StartHostAsync()
         {
             try
@@ -159,7 +183,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     Debug.LogWarning("The Host is already started");
                     return;
                 }
-                
+
                 _isStarted = true;
                 await _host.StartAsync();
             }
@@ -171,7 +195,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         #endregion
-        
+
 #if UNITY_EDITOR
         private void OnValidate()
         {

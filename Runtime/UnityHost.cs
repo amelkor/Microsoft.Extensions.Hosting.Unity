@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define MICROSOFT_EXTENSIONS_HOSTING
+
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UnityEngine;

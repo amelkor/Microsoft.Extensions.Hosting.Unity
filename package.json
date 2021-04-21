@@ -1,14 +1,14 @@
 {
-  "name": "microsoft.extensions.hosting.unity",
+  "name": "com.blacksmallriver.microsoft.extensions.hosting",
   "author": {
-    "name": "amelkor",
-    "url": "http://amelkor.com"
+    "name": "Aleksei Melkor",
+    "url": "https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage"
   },
   "displayName": "Microsoft.Extensions.Hosting for Unity",
-  "description": "Microsoft.Extensions.Hosting adopted for Unity. The documentation can be found here: (Tutorial: Use dependency injection in .NET) https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage",
+  "description": "Microsoft.Extensions.Hosting adopted for Unity",
   "unity": "2019.4",
   "release": "0f1",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": [
     "unity",
     "integration",
@@ -20,7 +20,5 @@
     "type": "git",
     "url": "https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git"
   },
-  "type": "library",
-  "dependencies": {
-  }
+  "type": "library"
 }
