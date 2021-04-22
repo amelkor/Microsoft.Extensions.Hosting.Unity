@@ -17,6 +17,25 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
+        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton(provider =>
+                {
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+
+                    if (useHostLifetime)
+                        SetupLifetime(component, provider, _serviceInjectionMethodName);
+
+                    return component;
+                });
+            });
+
+            return this;
+        }
+
+        /// <inheritdoc/>
         public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T>() where T : MonoBehaviour
         {
             _hostBuilder.ConfigureServices(services =>
@@ -25,7 +44,8 @@ namespace Microsoft.Extensions.Hosting.Unity
                 {
                     var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
                     var component = root.AddComponent<T>();
-                    SetupUnityComponent(component, provider, _serviceInjectionMethodName);
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider, _serviceInjectionMethodName);
 
                     return component;
                 });
@@ -43,7 +63,8 @@ namespace Microsoft.Extensions.Hosting.Unity
                 {
                     var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
                     var component = root.AddComponent<TImpl>();
-                    SetupUnityComponent(component, provider, _serviceInjectionMethodName);
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider, _serviceInjectionMethodName);
 
                     return component;
                 });
@@ -61,7 +82,8 @@ namespace Microsoft.Extensions.Hosting.Unity
                 {
                     var gameObject = new GameObject($"{typeof(T).Name} (hosted transient)");
                     var component = gameObject.AddComponent<T>();
-                    SetupUnityComponent(component, provider, _serviceInjectionMethodName);
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider, _serviceInjectionMethodName);
 
                     return component;
                 });
@@ -79,7 +101,8 @@ namespace Microsoft.Extensions.Hosting.Unity
                 {
                     var gameObject = new GameObject($"{typeof(TImpl).Name} (hosted transient)");
                     var component = gameObject.AddComponent<TImpl>();
-                    SetupUnityComponent(component, provider, _serviceInjectionMethodName);
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider, _serviceInjectionMethodName);
 
                     return component;
                 });
@@ -90,19 +113,22 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         #region private methods
 
-        private static void SetupUnityComponent<T>(T component, IServiceProvider provider, string injectionMethodName) where T : MonoBehaviour
+        private static void InjectServices<T>(T component, IServiceProvider provider, string injectionMethodName) where T : MonoBehaviour
         {
-            if (Reflection.TryGetInjectionMethod<T>(injectionMethodName, out var inject))
-            {
-                var instances = new object[inject.types.Length];
-                for (var i = 0; i < inject.types.Length; i++)
-                {
-                    instances[i] = provider.GetRequiredService(inject.types[i]);
-                }
+            if (!Reflection.TryGetInjectionMethod<T>(injectionMethodName, out var inject))
+                return;
 
-                inject.method.Invoke(component, instances);
+            var instances = new object[inject.types.Length];
+            for (var i = 0; i < inject.types.Length; i++)
+            {
+                instances[i] = provider.GetRequiredService(inject.types[i]);
             }
 
+            inject.method.Invoke(component, instances);
+        }
+
+        private static void SetupLifetime<T>(T component, IServiceProvider provider, string injectionMethodName) where T : MonoBehaviour
+        {
             var lifetime = provider.GetRequiredService<IHostApplicationLifetime>();
             lifetime.ApplicationStopping.Register(() =>
             {

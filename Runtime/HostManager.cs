@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Hosting.Unity
     /// <summary>
     /// Base class for using <see cref="Microsoft.Extensions.Hosting"/> in Unity.
     /// </summary>
+    [DefaultExecutionOrder(-9000)]
     public abstract class HostManager : MonoBehaviour
     {
         private const string DEFAULT_INJECTION_METHOD_NAME = "AwakeServices";
