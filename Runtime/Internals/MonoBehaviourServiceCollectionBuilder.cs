@@ -15,9 +15,9 @@ namespace Microsoft.Extensions.Hosting.Unity
             _hostBuilder = hostBuilder;
             _serviceInjectionMethodName = serviceInjectionMethodName;
         }
-
+        
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T
+        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton(MonoBehaviour component, bool useHostLifetime = false)
         {
             _hostBuilder.ConfigureServices(services =>
             {
@@ -36,11 +36,30 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
+        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T where T : class
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton<T>(provider =>
+                {
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+
+                    if (useHostLifetime)
+                        SetupLifetime(component, provider, _serviceInjectionMethodName);
+
+                    return component;
+                });
+            });
+
+            return this;
+        }
+
+        /// <inheritdoc/>
         public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T>() where T : MonoBehaviour
         {
             _hostBuilder.ConfigureServices(services =>
             {
-                services.AddSingleton(provider =>
+                services.AddSingleton<T>(provider =>
                 {
                     var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
                     var component = root.AddComponent<T>();
