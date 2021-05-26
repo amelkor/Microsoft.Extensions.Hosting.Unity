@@ -7,9 +7,9 @@ namespace Microsoft.Extensions.Hosting.Unity
 {
     internal static class Reflection
     {
-        public static bool TryGetInjectionMethod<T>(string methodName, out InjectMethod injectable) where T : Component
+        public static bool TryGetInjectionMethod(this Type type, string methodName, out InjectMethod injectable)
         {
-            var methods = typeof(T).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             foreach (var method in methods)
             {
                 if (!method.Name.Equals(methodName, StringComparison.Ordinal))

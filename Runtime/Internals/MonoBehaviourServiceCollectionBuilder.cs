@@ -17,13 +17,15 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
         
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton(MonoBehaviour component, bool useHostLifetime = false)
+        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton(MonoBehaviour component, Type type = default, bool useHostLifetime = false)
         {
             _hostBuilder.ConfigureServices(services =>
             {
-                services.AddSingleton(provider =>
+                type ??= component.GetType();
+
+                services.AddSingleton(type, provider =>
                 {
-                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    InjectServices(type, component, provider, _serviceInjectionMethodName);
 
                     if (useHostLifetime)
                         SetupLifetime(component, provider, _serviceInjectionMethodName);
@@ -134,7 +136,12 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         private static void InjectServices<T>(T component, IServiceProvider provider, string injectionMethodName) where T : MonoBehaviour
         {
-            if (!Reflection.TryGetInjectionMethod<T>(injectionMethodName, out var inject))
+            InjectServices(typeof(T), component, provider, injectionMethodName);
+        }
+        
+        private static void InjectServices(Type type, MonoBehaviour component, IServiceProvider provider, string injectionMethodName)
+        {
+            if (!type.TryGetInjectionMethod(injectionMethodName, out var inject))
                 return;
 
             var instances = new object[inject.types.Length];

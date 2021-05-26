@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.Unity.Logging;
 using Microsoft.Extensions.Logging;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -24,6 +25,8 @@ namespace Microsoft.Extensions.Hosting.Unity
         [Tooltip("If false, " + nameof(BuildManually) + "() method needs to be called to build the host")]
         [SerializeField] private bool buildOnAwake = true;
 
+        [SerializeField] private bool bindWithUnityLifetime = true;
+
         [Header("Logging")]
         [Tooltip("Use Unity Debug.Log to print log messages")]
         [SerializeField] private bool logToUnity = true;
@@ -36,9 +39,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         [SerializeField] private UnityEvent hostStarted;
         [SerializeField] private UnityEvent hostStopping;
         [SerializeField] private UnityEvent hostStopped;
-        
+
         private IHostBuilder _hostBuilder;
-        private IHost _host;
+        protected IHost host;
 
         private bool _isBuilt;
         private bool _isStarted;
@@ -55,6 +58,17 @@ namespace Microsoft.Extensions.Hosting.Unity
         protected abstract void ConfigureLogging(ILoggingBuilder builder);
         protected abstract void ConfigureServices(IServiceCollection services);
         protected abstract void ConfigureMonoBehaviours(IMonoBehaviourServiceCollectionBuilder services);
+
+        public IServiceProvider Services
+        {
+            get
+            {
+                if (!_isBuilt)
+                    throw new InvalidOperationException("Host must be built before accessing Services");
+
+                return host.Services;
+            }
+        }
 
         private void Awake()
         {
@@ -103,18 +117,35 @@ namespace Microsoft.Extensions.Hosting.Unity
             try
             {
                 _isBuilt = true;
-                _host = _hostBuilder.Build();
+                host = _hostBuilder.Build();
 
-                var lifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
-                
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+
                 if (hostStarted != null)
                     lifetime.ApplicationStarted.Register(hostStarted.Invoke);
-                
+
                 if (hostStopping != null)
                     lifetime.ApplicationStopping.Register(hostStopping.Invoke);
-                
+
                 if (hostStopped != null)
                     lifetime.ApplicationStopped.Register(hostStopped.Invoke);
+
+                if (bindWithUnityLifetime)
+                {
+                    Application.wantsToQuit += () =>
+                    {
+                        lifetime.StopApplication();
+                        return true;
+                    };
+                    lifetime.ApplicationStopped.Register(() =>
+                    {
+                        Debug.Log("Application stopped");
+#if UNITY_EDITOR
+                        EditorApplication.isPlaying = false;
+#endif
+                        Application.Quit();
+                    });
+                }
 
                 hostBuilt?.Invoke();
             }
@@ -145,9 +176,9 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         private async void OnDisable()
         {
-            if (_isBuilt && _isStarted)
+            if (host != null && _isBuilt && _isStarted)
             {
-                await _host.StopAsync();
+                await host.StopAsync();
             }
         }
 
@@ -166,7 +197,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 }
 
                 _isStarted = true;
-                _host.Start();
+                host.Start();
             }
             catch (Exception)
             {
@@ -186,7 +217,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 }
 
                 _isStarted = true;
-                await _host.StartAsync();
+                await host.StartAsync();
             }
             catch (Exception)
             {

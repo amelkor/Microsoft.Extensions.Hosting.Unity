@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         private static void SetupUnityComponent<T>(T component, IServiceProvider provider) where T : MonoBehaviour
         {
-            if (Reflection.TryGetInjectionMethod<T>(INJECTABLE_METHOD_NAME, out var inject))
+            if (typeof(T).TryGetInjectionMethod(INJECTABLE_METHOD_NAME, out var inject))
             {
                 var instances = new object[inject.types.Length];
                 for (var i = 0; i < inject.types.Length; i++)

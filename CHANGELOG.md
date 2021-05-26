@@ -1,5 +1,13 @@
 # Microsoft.Extensions.Hosting for Unity
 
+## [1.0.4] - 2021-05-27
+### Fixed
+- Dependency resolving for MonoBehaviours
+
+## [1.0.3] - 2021-05-13
+### Fixed
+- Minor fixes
+
 ## [1.0.2] - 2021-04-22
 ### Added
 - MonoBeaviour component registration from existing GameObject
