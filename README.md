@@ -15,6 +15,8 @@ Add https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git to Unity P
 
 ## Getting started
 
+> Check the [Demo Project](https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity-Demo)
+
 Injection into `Monobehaviour` classes happens via custom defined private method which name is specified as `Services Injection Method Name` parameter. The default name is `AwakeServices`. Could be adjusted in the Unity Inspector window.
 
 To get started, you need to implement a `HostManager`
