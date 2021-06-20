@@ -8,7 +8,33 @@ The documentation can be found here: [Tutorial: Use dependency injection in .NET
 
 ## Install
 
-UPM Package install via git URL:
+### UPM Package install via npmjs:
+
+Add the entry below to the project's manifest.json
+
+```json
+    "scopedRegistries": [
+      {
+        "name": "microsoft.extensions.hosting",
+        "url": "https://registry.npmjs.org",
+        "scopes": [
+          "com.blacksmallriver.microsoft.extensions.hosting"
+        ]
+      }
+    ]
+```
+Or add it in Unity Editor:
+
+> Project Settings -> Package Manager -> Scoped Registries
+> 
+> name: microsoft.extensions.hosting
+> 
+> URL: https://registry.npmjs.org
+> 
+> scope: com.blacksmallriver.microsoft.extensions.hosting
+
+### UPM Package install via git URL (no package updates will be available this way):
+
 > Requires a version of unity that supports path query parameter for git packages (Unity >= 2019.3.4f1).
 
 Add https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git to Unity Package Manager
