@@ -1,9 +1,6 @@
 {
-  "name": "com.blacksmallriver.microsoft.extensions.hosting",
-  "author": {
-    "name": "Aleksei Melkor",
-    "url": "https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage"
-  },
+  "name": "@unity3d/com.blacksmallriver.microsoft.extensions.hosting",
+  "author": "Aleksei Melkor (https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)",
   "displayName": "Microsoft.Extensions.Hosting for Unity",
   "description": "Microsoft.Extensions.Hosting adopted for Unity",
   "unity": "2019.4",
@@ -18,7 +15,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git"
+    "url": "git+https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git"
   },
-  "type": "library"
+  "type": "library",
+  "bugs": {
+    "url": "https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity/issues"
+  },
+  "homepage": "https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity#readme",
+  "license": "MIT"
 }

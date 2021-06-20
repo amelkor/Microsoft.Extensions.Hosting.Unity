@@ -1,0 +1,12 @@
+bin/
+obj/
+bin.meta
+obj.meta
+.bin/
+.obj/
+*.csproj
+*.csproj.meta
+*.DotSettings
+*.DotSettings.meta
+*.nuspec
+*.nuspec.meta
