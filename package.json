@@ -1,5 +1,5 @@
 {
-  "name": "@unity3d/com.blacksmallriver.microsoft.extensions.hosting",
+  "name": "com.blacksmallriver.microsoft.extensions.hosting",
   "author": "Aleksei Melkor (https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)",
   "displayName": "Microsoft.Extensions.Hosting for Unity",
   "description": "Microsoft.Extensions.Hosting adopted for Unity",
