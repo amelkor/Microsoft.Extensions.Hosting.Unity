@@ -5,19 +5,31 @@ using UnityEngine;
 namespace Microsoft.Extensions.Hosting.Unity
 {
     /// <inheritdoc/>
-    internal class MonoBehaviourServiceCollectionBuilder : IMonoBehaviourServiceCollectionBuilder
+    internal class UnityObjectServiceCollectionBuilder : IUnityObjectServiceCollectionBuilder
     {
         private readonly IHostBuilder _hostBuilder;
         private readonly string _serviceInjectionMethodName;
 
-        public MonoBehaviourServiceCollectionBuilder(IHostBuilder hostBuilder, string serviceInjectionMethodName)
+        public UnityObjectServiceCollectionBuilder(IHostBuilder hostBuilder, string serviceInjectionMethodName)
         {
             _hostBuilder = hostBuilder;
             _serviceInjectionMethodName = serviceInjectionMethodName;
         }
+
+        private static IMonoBehaviourHostRoot GetHostRoot(HostBuilderContext context)
+        {
+            // ReSharper disable once InvertIf
+            if (context.Properties.TryGetValue(Constants.MonoBehaviourHostRootInstanceKey, out var root))
+            {
+                if (root is IMonoBehaviourHostRoot r)
+                    return r;
+            }
+
+            throw new ArgumentException("HostBuilderContext does not contain IMonoBehaviourHostRoot");
+        }
         
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton(MonoBehaviour component, Type type = default, bool useHostLifetime = false)
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton(MonoBehaviour component, Type type = default, bool useHostLifetime = false)
         {
             _hostBuilder.ConfigureServices(services =>
             {
@@ -37,17 +49,21 @@ namespace Microsoft.Extensions.Hosting.Unity
             return this;
         }
 
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourHostedService<T>() where T : MonoBehaviour, IHostedService
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourHostedService<T>() where T : MonoBehaviour, IHostedService
         {
-            _hostBuilder.ConfigureServices(services =>
+            _hostBuilder.ConfigureServices((context, services) =>
             {
                 services.AddHostedService<T, T>(provider =>
                 {
-                    var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
+                    var root = GetHostRoot(context);
                     var component = root.AddComponent<T>();
+                    component.enabled = false;
+                    
                     InjectServices(component, provider, _serviceInjectionMethodName);
                     SetupLifetime(component, provider, _serviceInjectionMethodName);
 
+                    component.enabled = true;
+                    
                     return component;
                 });
             });
@@ -55,13 +71,13 @@ namespace Microsoft.Extensions.Hosting.Unity
             return this;
         }
         
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourHostedService<T, TImpl>() where T : MonoBehaviour, IHostedService where TImpl : MonoBehaviour, T
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourHostedService<T, TImpl>() where T : MonoBehaviour, IHostedService where TImpl : MonoBehaviour, T
         {
-            _hostBuilder.ConfigureServices(services =>
+            _hostBuilder.ConfigureServices((context, services) =>
             {
                 services.AddHostedService<T, TImpl>(provider =>
                 {
-                    var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
+                    var root = GetHostRoot(context);
                     var component = root.AddComponent<TImpl>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
                     SetupLifetime(component, provider, _serviceInjectionMethodName);
@@ -74,7 +90,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T where T : class
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T where T : class
         {
             _hostBuilder.ConfigureServices(services =>
             {
@@ -93,13 +109,13 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T>() where T : MonoBehaviour
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton<T>() where T : MonoBehaviour
         {
-            _hostBuilder.ConfigureServices(services =>
+            _hostBuilder.ConfigureServices((context, services) =>
             {
                 services.AddSingleton<T>(provider =>
                 {
-                    var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
+                    var root = GetHostRoot(context);
                     var component = root.AddComponent<T>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
                     SetupLifetime(component, provider, _serviceInjectionMethodName);
@@ -112,13 +128,13 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
         {
-            _hostBuilder.ConfigureServices(services =>
+            _hostBuilder.ConfigureServices((context, services) =>
             {
                 services.AddSingleton<T, TImpl>(provider =>
                 {
-                    var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
+                    var root = GetHostRoot(context);
                     var component = root.AddComponent<TImpl>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
                     SetupLifetime(component, provider, _serviceInjectionMethodName);
@@ -131,7 +147,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourTransient<T>() where T : MonoBehaviour
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourTransient<T>() where T : MonoBehaviour
         {
             _hostBuilder.ConfigureServices(services =>
             {
@@ -150,7 +166,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourTransient<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourTransient<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
         {
             _hostBuilder.ConfigureServices(services =>
             {
@@ -168,64 +184,45 @@ namespace Microsoft.Extensions.Hosting.Unity
             return this;
         }
 
-        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectSingleton<T>() where T : ScriptableObject
+        public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton(ScriptableObject scriptableObject, Type type)
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton(type, provider =>
+                {
+                    InjectServices(scriptableObject, provider, _serviceInjectionMethodName);
+
+                    return scriptableObject;
+                });
+            });
+            
+            return this;
+        }
+
+        public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T>(T scriptableObject) where T : ScriptableObject
         {
             _hostBuilder.ConfigureServices(services =>
             {
                 services.AddSingleton<T>(provider =>
                 {
-                    var component = ScriptableObject.CreateInstance(typeof(T));
-                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    InjectServices(scriptableObject, provider, _serviceInjectionMethodName);
 
-                    return (T) component;
+                    return scriptableObject;
                 });
             });
             
             return this;
         }
 
-        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectSingleton<T, TImpl>() where T : ScriptableObject where TImpl : ScriptableObject, T
+        public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T, TImpl>(TImpl scriptableObject) where T : ScriptableObject where TImpl : ScriptableObject, T
         {
             _hostBuilder.ConfigureServices(services =>
             {
                 services.AddSingleton<T>(provider =>
                 {
-                    var component = ScriptableObject.CreateInstance(typeof(TImpl));
-                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    InjectServices(scriptableObject, provider, _serviceInjectionMethodName);
 
-                    return (TImpl) component;
-                });
-            });
-            
-            return this;
-        }
-
-        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectTransient<T>() where T : ScriptableObject
-        {
-            _hostBuilder.ConfigureServices(services =>
-            {
-                services.AddTransient<T>(provider =>
-                {
-                    var component = ScriptableObject.CreateInstance(typeof(T));
-                    InjectServices(component, provider, _serviceInjectionMethodName);
-
-                    return (T) component;
-                });
-            });
-            
-            return this;
-        }
-
-        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectTransient<T, TImpl>() where T : class where TImpl : ScriptableObject, T
-        {
-            _hostBuilder.ConfigureServices(services =>
-            {
-                services.AddTransient<T>(provider =>
-                {
-                    var component = ScriptableObject.CreateInstance(typeof(TImpl));
-                    InjectServices(component, provider, _serviceInjectionMethodName);
-
-                    return (TImpl) component;
+                    return (TImpl) scriptableObject;
                 });
             });
             
@@ -255,15 +252,15 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         private static void SetupLifetime<T>(T component, IServiceProvider provider, string injectionMethodName) where T : MonoBehaviour
         {
-            var lifetime = provider.GetRequiredService<IHostApplicationLifetime>();
-            lifetime.ApplicationStopping.Register(() =>
-            {
-                if (!component)
-                    return;
-
-                component.StopAllCoroutines();
-                component.CancelInvoke();
-            });
+            // var lifetime = provider.GetRequiredService<IHostApplicationLifetime>();
+            // lifetime.ApplicationStopping.Register(() =>
+            // {
+            //     if (!component)
+            //         return;
+            //
+            //     component.StopAllCoroutines();
+            //     component.CancelInvoke();
+            // });
         }
 
         #endregion

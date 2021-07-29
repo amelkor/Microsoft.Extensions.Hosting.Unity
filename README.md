@@ -18,7 +18,8 @@ Add the entry below to the project's manifest.json
         "name": "microsoft.extensions.hosting",
         "url": "https://registry.npmjs.org",
         "scopes": [
-          "com.blacksmallriver.microsoft.extensions.hosting"
+          "com.blacksmallriver.hosting",
+          "com.blacksmallriver"
         ]
       }
     ]
@@ -31,7 +32,7 @@ Or add it in Unity Editor:
 > 
 > URL: https://registry.npmjs.org
 > 
-> scope: com.blacksmallriver.microsoft.extensions.hosting
+> scope: com.blacksmallriver.hosting
 
 ### UPM Package install via git URL (no package updates will be available this way):
 

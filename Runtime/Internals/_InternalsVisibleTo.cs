@@ -1,7 +1,1 @@
-﻿namespace Microsoft.Extensions.Hosting.Unity
-{
-    public class _InternalsVisibleTo
-    {
-        
-    }
-}
+﻿[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Bsr.Microsoft.Extensions.Hosting.Unity.Editor")]

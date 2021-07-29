@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,10 +14,15 @@ namespace Microsoft.Extensions.Hosting.Unity
     /// <summary>
     /// Base class for using <see cref="Microsoft.Extensions.Hosting"/> in Unity.
     /// </summary>
-    [DefaultExecutionOrder(-9000)]
     public abstract class HostManager : MonoBehaviour
     {
+        private const string DEFAULT_HOST_APPLICATION_NAME = "Unity Application";
         private const string DEFAULT_INJECTION_METHOD_NAME = "AwakeServices";
+        private const int DEFAULT_GRACEFUL_SHUTDOWN_TIMEOUT_MS = 5000;
+        private const int MIN_GRACEFUL_SHUTDOWN_TIMEOUT_MS = 100;
+
+        [Tooltip("Application name for the HostingEnvironment")]
+        [SerializeField] private string hostApplicationName;
 
         [Tooltip("The method name which will be used to inject Host services. Works like constructor injection in ordinary classes, but since MonoBehaviours can't use constructors, this method will be used instead")]
         [SerializeField] private string servicesInjectionMethodName = DEFAULT_INJECTION_METHOD_NAME;
@@ -25,14 +30,24 @@ namespace Microsoft.Extensions.Hosting.Unity
         [Tooltip("If false, " + nameof(BuildManually) + "() method needs to be called to build the host")]
         [SerializeField] private bool buildOnAwake = true;
 
-        [SerializeField] private bool bindWithUnityLifetime = true;
+        [SerializeField] private bool controlUnityLifetime;
+
+        [Tooltip("Timeout for the host to shutdown gracefully")]
+        [SerializeField] private int gracefulShutduwnTimeoutMs = DEFAULT_GRACEFUL_SHUTDOWN_TIMEOUT_MS;
 
         [Header("Logging")]
         [Tooltip("Use Unity Debug.Log to print log messages")]
         [SerializeField] private bool logToUnity = true;
+        
+        [Tooltip("Minimum log level")]
+        [SerializeField] private LogLevel logLevel = LogLevel.Information;
 
         [Tooltip("Will suppress host lifetime messages logging if set to true")]
         [SerializeField] private bool suppressStatusMessages;
+
+        [Header("Options")]
+        [Tooltip("Optional command line arguments to pass into the Host")]
+        [SerializeField] private string[] cmdArguments;
 
         [Header("Events")]
         [SerializeField] private UnityEvent hostBuilt;
@@ -41,24 +56,48 @@ namespace Microsoft.Extensions.Hosting.Unity
         [SerializeField] private UnityEvent hostStopped;
 
         private IHostBuilder _hostBuilder;
+
+        // ReSharper disable once MemberCanBePrivate.Global
         protected IHost host;
+
+        private CancellationTokenSource _cts;
 
         private bool _isBuilt;
         private bool _isStarted;
 
+        /// <summary>
+        /// Override to use Unity's Awake() method.
+        /// </summary>
         protected virtual void OnAwake()
         {
         }
 
+        /// <summary>
+        /// Override to use Unity's Start() method.
+        /// </summary>
         protected virtual void OnStart()
+        {
+        }
+        
+        /// <summary>
+        /// Allows to add an extra step to the host builder before it's built.
+        /// </summary>
+        /// <param name="hostBuilder">Host builder.</param>
+        protected virtual void ConfigureExtra(IHostBuilder hostBuilder)
         {
         }
 
         protected abstract void ConfigureAppConfiguration(IConfigurationBuilder builder);
         protected abstract void ConfigureLogging(ILoggingBuilder builder);
         protected abstract void ConfigureServices(IServiceCollection services);
-        protected abstract void ConfigureMonoBehaviours(IMonoBehaviourServiceCollectionBuilder services);
+        protected abstract void ConfigureUnityObjects(IUnityObjectServiceCollectionBuilder services);
+        
 
+        // ReSharper disable once MemberCanBeProtected.Global
+        /// <summary>
+        /// The service provider of the Host.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">when the Host is not built yet.</exception>
         public IServiceProvider Services
         {
             get
@@ -72,7 +111,8 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         private void Awake()
         {
-            _hostBuilder = UnityHost.CreateDefaultBuilder(servicesInjectionMethodName);
+            _hostBuilder = UnityHost.CreateDefaultBuilder(servicesInjectionMethodName, cmdArguments);
+            _hostBuilder.ConfigureLogging(builder => builder.SetMinimumLevel(logLevel));
             _hostBuilder.ConfigureLogging(ConfigureLogging);
 
             if (logToUnity)
@@ -82,13 +122,15 @@ namespace Microsoft.Extensions.Hosting.Unity
             _hostBuilder.ConfigureServices(services => { services.SuppressStatusMessages(suppressStatusMessages); });
 
             _hostBuilder.ConfigureServices(ConfigureServices);
-            _hostBuilder.ConfigureMonoBehaviours(ConfigureMonoBehaviours);
-
+            _hostBuilder.ConfigureMonoBehaviours(ConfigureUnityObjects);
+            ConfigureExtra(_hostBuilder);
             OnAwake();
 
             if (buildOnAwake)
                 BuildHost();
         }
+
+        #region Public API methods
 
         /// <summary>
         /// Build the <see cref="IHost"/> if <see cref="buildOnAwake"/> set to false.
@@ -110,7 +152,34 @@ namespace Microsoft.Extensions.Hosting.Unity
             BuildHost();
         }
 
-        #region Public API methods
+        /// <summary>
+        /// Start the Host manually. Call this after <see cref="BuildManually"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">when the Host is not build yet.</exception>
+        public void StartManually()
+        {
+            if (!_isBuilt)
+                throw new InvalidOperationException("Host must be build before start.");
+
+            StartHost();
+        }
+
+        /// <summary>
+        /// Start the Host manually.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">when the Host was not build and started yet.</exception>
+        public void StopManually()
+        {
+            if (!_isBuilt && !_isStarted)
+                throw new InvalidOperationException("Host must be build and started before stop.");
+
+            if (host != null)
+            {
+                _cts?.Cancel();
+            }
+        }
+
+        #endregion
 
         private void BuildHost()
         {
@@ -121,22 +190,31 @@ namespace Microsoft.Extensions.Hosting.Unity
 
                 var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
+                // host events occur only once per Host lifetime so remove them after invocation
+                
                 if (hostStarted != null)
-                    lifetime.ApplicationStarted.Register(hostStarted.Invoke);
+                    lifetime.ApplicationStarted.Register(() =>
+                    {
+                        hostStarted.Invoke();
+                        hostStarted.RemoveAllListeners();
+                    });
 
                 if (hostStopping != null)
-                    lifetime.ApplicationStopping.Register(hostStopping.Invoke);
+                    lifetime.ApplicationStopping.Register(() =>
+                    {
+                        hostStopping.Invoke();
+                        hostStopping.RemoveAllListeners();
+                    });
 
                 if (hostStopped != null)
-                    lifetime.ApplicationStopped.Register(hostStopped.Invoke);
-
-                if (bindWithUnityLifetime)
-                {
-                    Application.wantsToQuit += () =>
+                    lifetime.ApplicationStopped.Register(() =>
                     {
-                        lifetime.StopApplication();
-                        return true;
-                    };
+                        hostStopped.Invoke();
+                        hostStopped.RemoveAllListeners();
+                    });
+
+                if (controlUnityLifetime)
+                {
                     lifetime.ApplicationStopped.Register(() =>
                     {
                         Debug.Log("Application stopped");
@@ -147,7 +225,18 @@ namespace Microsoft.Extensions.Hosting.Unity
                     });
                 }
 
+                Application.quitting += () =>
+                {
+                    _cts?.Cancel();
+                    using var cts = new CancellationTokenSource(gracefulShutduwnTimeoutMs);
+                    host.StopAsync(cts.Token)
+                        .GetAwaiter()
+                        .GetResult();
+                    host?.Dispose();
+                };
+
                 hostBuilt?.Invoke();
+                hostBuilt?.RemoveAllListeners();
             }
             catch (Exception)
             {
@@ -156,11 +245,9 @@ namespace Microsoft.Extensions.Hosting.Unity
             }
         }
 
-        #endregion
-
         #region Host control by Unity events
 
-        public async void Start()
+        private async void Start()
         {
             OnStart();
 
@@ -174,12 +261,14 @@ namespace Microsoft.Extensions.Hosting.Unity
             }
         }
 
-        private async void OnDisable()
+        private void OnEnable()
         {
-            if (host != null && _isBuilt && _isStarted)
-            {
-                await host.StopAsync();
-            }
+            _cts = new CancellationTokenSource();
+        }
+
+        private void OnDisable()
+        {
+            _cts?.Cancel();
         }
 
         #endregion
@@ -217,7 +306,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 }
 
                 _isStarted = true;
-                await host.StartAsync();
+                await host.StartAsync(_cts.Token);
             }
             catch (Exception)
             {
@@ -233,6 +322,16 @@ namespace Microsoft.Extensions.Hosting.Unity
         {
             if (string.IsNullOrEmpty(servicesInjectionMethodName))
                 servicesInjectionMethodName = DEFAULT_INJECTION_METHOD_NAME;
+
+            if (string.IsNullOrEmpty(hostApplicationName))
+            {
+                hostApplicationName = string.IsNullOrEmpty(Application.productName)
+                    ? DEFAULT_HOST_APPLICATION_NAME
+                    : Application.productName;
+            }
+
+            if (gracefulShutduwnTimeoutMs <= MIN_GRACEFUL_SHUTDOWN_TIMEOUT_MS)
+                gracefulShutduwnTimeoutMs = DEFAULT_GRACEFUL_SHUTDOWN_TIMEOUT_MS;
         }
 #endif
     }

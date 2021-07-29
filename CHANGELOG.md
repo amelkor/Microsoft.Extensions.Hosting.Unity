@@ -1,5 +1,20 @@
 # Microsoft.Extensions.Hosting for Unity
 
+## [1.2.0] - 2021-07-23
+### Fixed
+- Removed reload on change for FileConfigurationSources (caused UnityEditor to enter play mode with long delay)
+
+### Added
+- ScriptableObject registration
+- MonoBehaviour HostedService registration
+- Possibility to pass args to the host
+- Host log level parameter in the host Inspector
+- Host graceful shutduwn timeout parameter in the host Inspector
+
+## [1.1.0] - 2021-05-27
+### Fixed
+- Dependency resolving for MonoBehaviours
+
 ## [1.0.4] - 2021-05-27
 ### Fixed
 - Dependency resolving for MonoBehaviours

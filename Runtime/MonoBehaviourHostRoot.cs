@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         private void Awake()
         {
+            DontDestroyOnLoad(this);
             _root = gameObject;
         }
 

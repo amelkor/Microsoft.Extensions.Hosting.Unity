@@ -1,8 +1,8 @@
 {
     "name": "Bsr.Microsoft.Extensions.Hosting.Unity.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "Microsoft.Extensions.Hosting.Unity",
     "references": [
-        "GUID:71c6c6e852165ba4581c85f94bb30ef3"
+        "GUID:f02d2e96a369c224ba36e2b6953983a3"
     ],
     "includePlatforms": [
         "Editor"

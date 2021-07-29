@@ -7,13 +7,17 @@ using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Extensions.Hosting.Unity
+namespace Microsoft.Extensions.Hosting.Unity.Configuration
 {
+    /// <summary>
+    /// Configuration provider automatically creates Config/globalsettings.json under the Game's directory.
+    /// Inherit from this class and extend it with properties to use them as configuration keys.
+    /// </summary>
     [Serializable]
-    public class AppSettings : IConfigurationProvider
+    public abstract class GlobalSettings : IConfigurationProvider
     {
         internal const string ConfigDirPath = "Config";
-        internal const string ConfigFilePath = "appsettings.json";
+        internal const string ConfigFilePath = "globalsettings.json";
         internal const string LocalFilePath = ConfigDirPath + "/" + ConfigFilePath;
         private static readonly System.Text.Json.JsonSerializerOptions _serializerOptions = new System.Text.Json.JsonSerializerOptions {Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, WriteIndented = true};
         private readonly Type _type;
@@ -21,7 +25,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         private IConfigurationRoot _configurationRoot;
         private ConfigurationReloadToken _reloadToken = new ConfigurationReloadToken();
 
-        protected AppSettings()
+        protected GlobalSettings()
         {
             _type = GetType();
             _properties = _type.GetProperties(
@@ -32,6 +36,10 @@ namespace Microsoft.Extensions.Hosting.Unity
                 .ToDictionary(p => p.Name, p => p);
         }
 
+        /// <summary>
+        /// For internal purpose.
+        /// </summary>
+        /// <param name="configuration"></param>
         internal void SetConfiguration(IConfiguration configuration)
         {
             // ReSharper disable once InvertIf
@@ -69,6 +77,9 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         public IChangeToken GetReloadToken() => _reloadToken;
 
+        /// <summary>
+        /// Read configuration from the config file.
+        /// </summary>
         public void Load()
         {
             var json = BeforeLoad(File.ReadAllText(LocalFilePath));
@@ -81,7 +92,6 @@ namespace Microsoft.Extensions.Hosting.Unity
             }
 
             OnReload();
-            _configurationRoot?.Reload();
         }
 
         public virtual IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string parentPath)
@@ -101,14 +111,15 @@ namespace Microsoft.Extensions.Hosting.Unity
             return indexOf < 0 ? key.Substring(prefixLength) : key.Substring(prefixLength, indexOf - prefixLength);
         }
 
+        /// <summary>
+        /// Save configuration to the config file.
+        /// </summary>
         public void Save()
         {
             var json = BeforeSave(System.Text.Json.JsonSerializer.Serialize(this, _type, _serializerOptions));
 
             Directory.CreateDirectory(ConfigDirPath);
             File.WriteAllText(LocalFilePath, json);
-
-            _configurationRoot?.Reload();
         }
 
         private void OnReload()
@@ -117,8 +128,20 @@ namespace Microsoft.Extensions.Hosting.Unity
             previousToken.OnReload();
         }
 
-        public virtual string BeforeLoad(string json) => json;
+        /// <summary>
+        /// Override to perform extra actions onto the serialized data that just was loaded from the config file.
+        /// Could be used to decrypt or unzip the data before deserializing.
+        /// </summary>
+        /// <param name="content">Raw data that was read from the config file.</param>
+        /// <returns>Should return a valid json.</returns>
+        public virtual string BeforeLoad(string content) => content;
 
+        /// <summary>
+        /// Override to perform extra actions onto the serialized json.
+        /// Could be used to encrypt or zip the data before writing to the config file.
+        /// </summary>
+        /// <param name="json">Json serialized data.</param>
+        /// <returns>A content to save into the config file.</returns>
         public virtual string BeforeSave(string json) => json;
 
         public override string ToString() => _type.Name;

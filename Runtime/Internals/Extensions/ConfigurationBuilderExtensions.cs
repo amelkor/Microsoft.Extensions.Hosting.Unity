@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// File system watcher drastically increases Unity Editor enter playmode time. Better keep ReloadOnChange turned off
         /// </note>
         /// <param name="builder"></param>
-        public static void DisableFileSourcesReloadOnChange(this IConfigurationBuilder builder)
+        public static void DisableFileConfigurationSourceReloadOnChange(this IConfigurationBuilder builder)
         {
             foreach (var source in builder.Sources)
             {
