@@ -135,10 +135,20 @@ The settings are available through the Inspector window.
             
             services.AddMonoBehaviourSingleton<DemoMono>();
             services.AddMonoBehaviourSingleton<BehaviourTestComponent>();
+            
+            // ScriptableObject's must be passed as an existing instance
+            services.services.AddScriptableObjectSingleton(instance, typeof(MyScriptableObject));
+            
+            // a MonoBehaviour with IHostedService implementation
+            services.AddMonoBehaviourHostedService<GameModeService>();
         }
 ```
 
 Then create a new GameObject and attach the script.
+
+### GlobalSettings for Host
+
+Inheriting from `GlobalSettings` class allows to have a settings file under `Config/globalsettings.json` path of the Unity application. Any property in the derived class would be saved into the file and read on the host starting.
 
 ## Licensing
 - The asset: MIT License, see  [LICENSE.md](LICENSE.md) for more information.
