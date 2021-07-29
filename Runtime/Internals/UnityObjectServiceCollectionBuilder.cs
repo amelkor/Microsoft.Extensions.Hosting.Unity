@@ -37,6 +37,42 @@ namespace Microsoft.Extensions.Hosting.Unity
             return this;
         }
 
+        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourHostedService<T>() where T : MonoBehaviour, IHostedService
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddHostedService<T, T>(provider =>
+                {
+                    var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
+                    var component = root.AddComponent<T>();
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+
+                    return component;
+                });
+            });
+
+            return this;
+        }
+        
+        public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourHostedService<T, TImpl>() where T : MonoBehaviour, IHostedService where TImpl : MonoBehaviour, T
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddHostedService<T, TImpl>(provider =>
+                {
+                    var root = provider.GetRequiredService<IMonoBehaviourHostRoot>();
+                    var component = root.AddComponent<TImpl>();
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+
+                    return component;
+                });
+            });
+
+            return this;
+        }
+
         /// <inheritdoc/>
         public IMonoBehaviourServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T where T : class
         {
@@ -132,14 +168,78 @@ namespace Microsoft.Extensions.Hosting.Unity
             return this;
         }
 
+        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectSingleton<T>() where T : ScriptableObject
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton<T>(provider =>
+                {
+                    var component = ScriptableObject.CreateInstance(typeof(T));
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+
+                    return (T) component;
+                });
+            });
+            
+            return this;
+        }
+
+        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectSingleton<T, TImpl>() where T : ScriptableObject where TImpl : ScriptableObject, T
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton<T>(provider =>
+                {
+                    var component = ScriptableObject.CreateInstance(typeof(TImpl));
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+
+                    return (TImpl) component;
+                });
+            });
+            
+            return this;
+        }
+
+        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectTransient<T>() where T : ScriptableObject
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddTransient<T>(provider =>
+                {
+                    var component = ScriptableObject.CreateInstance(typeof(T));
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+
+                    return (T) component;
+                });
+            });
+            
+            return this;
+        }
+
+        public IMonoBehaviourServiceCollectionBuilder AddScriptableObjectTransient<T, TImpl>() where T : class where TImpl : ScriptableObject, T
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddTransient<T>(provider =>
+                {
+                    var component = ScriptableObject.CreateInstance(typeof(TImpl));
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+
+                    return (TImpl) component;
+                });
+            });
+            
+            return this;
+        }
+
         #region private methods
 
-        private static void InjectServices<T>(T component, IServiceProvider provider, string injectionMethodName) where T : MonoBehaviour
+        private static void InjectServices<T>(T component, IServiceProvider provider, string injectionMethodName) where T : UnityEngine.Object
         {
             InjectServices(typeof(T), component, provider, injectionMethodName);
         }
         
-        private static void InjectServices(Type type, MonoBehaviour component, IServiceProvider provider, string injectionMethodName)
+        private static void InjectServices(Type type, UnityEngine.Object component, IServiceProvider provider, string injectionMethodName)
         {
             if (!type.TryGetInjectionMethod(injectionMethodName, out var inject))
                 return;
