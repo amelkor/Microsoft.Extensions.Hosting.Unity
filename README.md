@@ -2,8 +2,8 @@
  
 [![Twitter Follow](https://img.shields.io/twitter/follow/AlekseyMelkor?color=blue&label=Follow%20on%20Twitter&logo=%20&logoColor=%20&style=flat-square)](https://twitter.com/AlekseyMelkor)
 
-# Microsoft.Extensions.Hosting for Unity3D
-#### This package allows to use DI Hosting in Unity projects.
+# .NET Generic Host for Unity3D
+#### This package allows to use DI Hosting (_Microsoft.Extensions.Hosting_) in Unity projects.
 The documentation can be found here: [Tutorial: Use dependency injection in .NET](https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)
 
 ## Install
