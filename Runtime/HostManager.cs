@@ -50,10 +50,10 @@ namespace Microsoft.Extensions.Hosting.Unity
         [SerializeField] private string[] cmdArguments;
 
         [Header("Events")]
-        [SerializeField] private UnityEvent hostBuilt;
-        [SerializeField] private UnityEvent hostStarted;
-        [SerializeField] private UnityEvent hostStopping;
-        [SerializeField] private UnityEvent hostStopped;
+        [SerializeField] protected UnityEvent hostBuilt;
+        [SerializeField] protected UnityEvent hostStarted;
+        [SerializeField] protected UnityEvent hostStopping;
+        [SerializeField] protected UnityEvent hostStopped;
 
         private IHostBuilder _hostBuilder;
 

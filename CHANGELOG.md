@@ -1,7 +1,13 @@
 # Microsoft.Extensions.Hosting for Unity
 
-## [1.2.0] - 2021-07-23
+## [1.2.1] - 2021-09-17
+### Added
+- HostManager events changed from private to protected
 ### Fixed
+- Trace output formatting for unity logger
+
+## [1.2.0] - 2021-07-23
+### Fixeds
 - Removed reload on change for FileConfigurationSources (caused UnityEditor to enter play mode with long delay)
 
 ### Added
