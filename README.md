@@ -8,6 +8,8 @@ The documentation can be found here: [Tutorial: Use dependency injection in .NET
 
 ## Install
 
+> Note: for Unity 2021.2 com.blacksmallriver.hosting.libs package is required to be installed since v1.2.2
+
 ### UPM Package install via npmjs:
 
 Add the entry below to the project's manifest.json
