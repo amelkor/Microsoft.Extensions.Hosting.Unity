@@ -2,10 +2,10 @@
   "name": "com.blacksmallriver.hosting",
   "author": "Aleksei Melkor (https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)",
   "displayName": "Microsoft.Extensions.Hosting for Unity",
-  "description": "Microsoft.Extensions.Hosting adopted for Unity. Please install com.blacksmallriver.hosting.libs additionaly for Unity versions below 2021.2",
+  "description": "Microsoft.Extensions.Hosting adopted for Unity",
   "unity": "2019.4",
   "release": "0f1",
-  "version": "1.2.2",
+  "version": "1.2.1",
   "keywords": [
     "unity",
     "integration",
