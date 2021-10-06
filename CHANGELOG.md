@@ -1,11 +1,6 @@
 # Microsoft.Extensions.Hosting for Unity
 
-## [1.2.3] - 2021-10-06
-### Below libs were moved to the separate package `com.blacksmallriver.hosting.libs`
-- Microsoft.Extensions.Configuration.Abstractions.dll
-- Microsoft.Extensions.Primitives.dll
-
-## [1.2.2] - 2021-10-05
+## [1.2.2] - 2021-09-17
 ### Below libs were moved to the separate package `com.blacksmallriver.hosting.libs`
 - System.Buffers.dll
 - System.Memory.dll
