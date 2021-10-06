@@ -1,5 +1,8 @@
 # Microsoft.Extensions.Hosting for Unity
 
+## [1.2.4] - 2021-09-17
+### Fixed version issues
+
 ## [1.2.1] - 2021-09-17
 ### Added
 - HostManager events changed from private to protected
