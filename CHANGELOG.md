@@ -1,11 +1,5 @@
 # Microsoft.Extensions.Hosting for Unity
 
-## [1.2.2] - 2021-09-17
-### Below libs were moved to the separate package `com.blacksmallriver.hosting.libs`
-- System.Buffers.dll
-- System.Memory.dll
-- System.Runtime.CompilerServices.Unsafe.dll
-
 ## [1.2.1] - 2021-09-17
 ### Added
 - HostManager events changed from private to protected
