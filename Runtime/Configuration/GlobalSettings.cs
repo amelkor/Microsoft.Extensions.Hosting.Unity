@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
@@ -19,11 +20,16 @@ namespace Microsoft.Extensions.Hosting.Unity.Configuration
         internal const string ConfigDirPath = "Config";
         internal const string ConfigFilePath = "globalsettings.json";
         internal const string LocalFilePath = ConfigDirPath + "/" + ConfigFilePath;
-        private static readonly System.Text.Json.JsonSerializerOptions _serializerOptions = new System.Text.Json.JsonSerializerOptions {Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, WriteIndented = true};
+        private static readonly JsonSerializerOptions _serializerOptions = new() {Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, IncludeFields = true, WriteIndented = true};
         private readonly Type _type;
         private readonly Dictionary<string, PropertyInfo> _properties;
         private IConfigurationRoot _configurationRoot;
         private ConfigurationReloadToken _reloadToken = new ConfigurationReloadToken();
+
+        /// <summary>
+        /// Invoked when settings are saved to file.
+        /// </summary>
+        public event Action Saved = delegate {  };
 
         protected GlobalSettings()
         {
@@ -83,7 +89,7 @@ namespace Microsoft.Extensions.Hosting.Unity.Configuration
         public void Load()
         {
             var json = BeforeLoad(File.ReadAllText(LocalFilePath));
-            var deserialized = System.Text.Json.JsonSerializer.Deserialize(json, _type, _serializerOptions);
+            var deserialized = JsonSerializer.Deserialize(json, _type, _serializerOptions);
 
             foreach (var property in _properties.Values)
             {
@@ -114,13 +120,23 @@ namespace Microsoft.Extensions.Hosting.Unity.Configuration
         /// <summary>
         /// Save configuration to the config file.
         /// </summary>
-        public void Save()
+        public void Save(bool writeDefaults = false)
         {
+            if (writeDefaults)
+                WriteDefaults();
+            
             var json = BeforeSave(System.Text.Json.JsonSerializer.Serialize(this, _type, _serializerOptions));
 
             Directory.CreateDirectory(ConfigDirPath);
             File.WriteAllText(LocalFilePath, json);
+
+            Saved();
         }
+        
+        /// <summary>
+        /// Assign default values.
+        /// </summary>
+        protected virtual void WriteDefaults(){}
 
         private void OnReload()
         {
@@ -140,7 +156,7 @@ namespace Microsoft.Extensions.Hosting.Unity.Configuration
         /// Override to perform extra actions onto the serialized json.
         /// Could be used to encrypt or zip the data before writing to the config file.
         /// </summary>
-        /// <param name="json">Json serialized data.</param>
+        /// <param name="json">Serialized settings.</param>
         /// <returns>A content to save into the config file.</returns>
         public virtual string BeforeSave(string json) => json;
 

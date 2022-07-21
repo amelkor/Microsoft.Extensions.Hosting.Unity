@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 if (context.Properties.TryGetValue(globalSettingsSource, out var source))
                 {
                     if (source is GlobalSettingsConfigurationSource<TSettings> s)
-                        collection.AddSingleton<TSettings>(s.Provider);
+                        collection.AddSingleton<TSettings>(s.Settings);
                 }
             });
         }
@@ -170,7 +170,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 inject.method.Invoke(component, instances);
             }
 
-            var lifetime = provider.GetRequiredService<IHostApplicationLifetime>();
+            var lifetime = provider.GetRequiredService<IApplicationLifetime>();
             lifetime.ApplicationStopping.Register(() =>
             {
                 if (!component)
