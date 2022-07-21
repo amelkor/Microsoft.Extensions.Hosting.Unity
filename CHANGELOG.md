@@ -1,5 +1,13 @@
 # Microsoft.Extensions.Hosting for Unity
 
+## [2.0.0] - 2022-07-21
+### Updated
+- .NET libraries updated to v6.0.0
+### Added
+- AddDetachedMonoBehaviourSingleton to add a MonoBehaviour service as a separated GameObject
+### Fixed
+- Default GlobalSettings initialization issue
+
 ## [1.2.4] - 2021-09-17
 ### Fixed version issues
 

@@ -109,9 +109,16 @@ namespace Microsoft.Extensions.Hosting.Unity
             }
         }
 
+        /// <summary>
+        /// Override this to initialize your own HostBuilder initial steps.
+        /// </summary>
+        /// <returns>IHostBuilder.</returns>
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected virtual IHostBuilder CreateHostBuilder() => UnityHost.CreateDefaultBuilder(servicesInjectionMethodName, cmdArguments);
+        
         private void Awake()
         {
-            _hostBuilder = UnityHost.CreateDefaultBuilder(servicesInjectionMethodName, cmdArguments);
+            _hostBuilder = CreateHostBuilder();
             _hostBuilder.ConfigureLogging(builder => builder.SetMinimumLevel(logLevel));
             _hostBuilder.ConfigureLogging(ConfigureLogging);
 
@@ -188,7 +195,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 _isBuilt = true;
                 host = _hostBuilder.Build();
 
-                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
 
                 // host events occur only once per Host lifetime so remove them after invocation
                 

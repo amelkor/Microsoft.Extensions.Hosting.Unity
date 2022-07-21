@@ -7,6 +7,11 @@ namespace Microsoft.Extensions.Hosting.Unity
     {
         IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton(MonoBehaviour component, Type type = default, bool useHostLifetime = false);
         IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton<T>() where T : MonoBehaviour;
+        
+        /// <summary>
+        /// Add a MonoBehaviour as a separate GameObject which won't be destroyed on load.
+        /// </summary>
+        IUnityObjectServiceCollectionBuilder AddDetachedMonoBehaviourSingleton<T>() where T : MonoBehaviour;
         IUnityObjectServiceCollectionBuilder AddMonoBehaviourHostedService<T>() where T : MonoBehaviour, IHostedService;
         IUnityObjectServiceCollectionBuilder AddMonoBehaviourHostedService<T, TImpl>() where T : MonoBehaviour, IHostedService where TImpl : MonoBehaviour, T;
         IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T where T : class;
