@@ -5,7 +5,7 @@
   "description": "Microsoft.Extensions.Hosting adopted for Unity",
   "unity": "2021.1",
   "release": "0f1",
-  "version": "2.0.0-preview.0",
+  "version": "2.0.0-preview.1",
   "keywords": [
     "unity",
     "integration",
