@@ -40,7 +40,26 @@ namespace Microsoft.Extensions.Hosting.Unity
                     InjectServices(type, component, provider, _serviceInjectionMethodName);
 
                     if (useHostLifetime)
-                        SetupLifetime(component, provider, _serviceInjectionMethodName);
+                        SetupLifetime(component, provider);
+
+                    return component;
+                });
+            });
+
+            return this;
+        }
+        
+        /// <inheritdoc/>
+        public IUnityObjectServiceCollectionBuilder AddDetachedMonoBehaviourSingleton<T>() where T : MonoBehaviour
+        {
+            _hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton<T>(provider =>
+                {
+                    var gameObject = new GameObject($"{typeof(T).Name} (hosted singleton)");
+                    var component = gameObject.AddComponent<T>();
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider, true);
 
                     return component;
                 });
@@ -60,7 +79,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     component.enabled = false;
                     
                     InjectServices(component, provider, _serviceInjectionMethodName);
-                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
 
                     component.enabled = true;
                     
@@ -80,7 +99,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     var root = GetHostRoot(context);
                     var component = root.AddComponent<TImpl>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
-                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
 
                     return component;
                 });
@@ -99,7 +118,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     InjectServices(component, provider, _serviceInjectionMethodName);
 
                     if (useHostLifetime)
-                        SetupLifetime(component, provider, _serviceInjectionMethodName);
+                        SetupLifetime(component, provider);
 
                     return component;
                 });
@@ -118,7 +137,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     var root = GetHostRoot(context);
                     var component = root.AddComponent<T>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
-                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
 
                     return component;
                 });
@@ -137,7 +156,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     var root = GetHostRoot(context);
                     var component = root.AddComponent<TImpl>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
-                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
 
                     return component;
                 });
@@ -156,7 +175,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     var gameObject = new GameObject($"{typeof(T).Name} (hosted transient)");
                     var component = gameObject.AddComponent<T>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
-                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
 
                     return component;
                 });
@@ -175,7 +194,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     var gameObject = new GameObject($"{typeof(TImpl).Name} (hosted transient)");
                     var component = gameObject.AddComponent<TImpl>();
                     InjectServices(component, provider, _serviceInjectionMethodName);
-                    SetupLifetime(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
 
                     return component;
                 });
@@ -250,17 +269,20 @@ namespace Microsoft.Extensions.Hosting.Unity
             inject.method.Invoke(component, instances);
         }
 
-        private static void SetupLifetime<T>(T component, IServiceProvider provider, string injectionMethodName) where T : MonoBehaviour
+        private static void SetupLifetime<T>(T component, IServiceProvider provider, bool dontDestroyOnLoad = false) where T : MonoBehaviour
         {
-            // var lifetime = provider.GetRequiredService<IHostApplicationLifetime>();
-            // lifetime.ApplicationStopping.Register(() =>
-            // {
-            //     if (!component)
-            //         return;
-            //
-            //     component.StopAllCoroutines();
-            //     component.CancelInvoke();
-            // });
+            var lifetime = provider.GetRequiredService<IHostApplicationLifetime>();
+            lifetime.ApplicationStopping.Register(() =>
+            {
+                if (!component)
+                    return;
+
+                component.StopAllCoroutines();
+                component.CancelInvoke();
+            });
+            
+            if(dontDestroyOnLoad)
+                GameObject.DontDestroyOnLoad(component.gameObject);
         }
 
         #endregion

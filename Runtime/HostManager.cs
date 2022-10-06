@@ -109,20 +109,41 @@ namespace Microsoft.Extensions.Hosting.Unity
             }
         }
 
+        /// <summary>
+        /// Override this to initialize your own HostBuilder initial steps.
+        /// </summary>
+        /// <returns>IHostBuilder.</returns>
+        // ReSharper disable once VirtualMemberNeverOverridden.Global
+        protected virtual IHostBuilder CreateHostBuilder() => Host.CreateDefaultBuilder(cmdArguments);
+        
         private void Awake()
         {
-            _hostBuilder = UnityHost.CreateDefaultBuilder(servicesInjectionMethodName, cmdArguments);
-            _hostBuilder.ConfigureLogging(builder => builder.SetMinimumLevel(logLevel));
+            _hostBuilder = CreateHostBuilder();
+            _hostBuilder.ConfigureAppConfiguration(builder => { builder.DisableFileConfigurationSourceReloadOnChange(); });
+            _hostBuilder.ConfigureLogging((_, loggingBuilder) =>
+            {
+                loggingBuilder.ClearProviders();
+                loggingBuilder.SetMinimumLevel(logLevel);
+            });
+            _hostBuilder.UseMonoBehaviourServiceCollection(servicesInjectionMethodName);
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                var root = new GameObject($"{nameof(MonoBehaviourHostRoot)} (host root)");
+                var component = root.AddComponent<MonoBehaviourHostRoot>();
+
+                context.Properties.Add(Constants.MonoBehaviourHostRootInstanceKey, component);
+                services.SuppressStatusMessages(suppressStatusMessages);
+            });
+            
             _hostBuilder.ConfigureLogging(ConfigureLogging);
 
             if (logToUnity)
                 _hostBuilder.ConfigureLogging(builder => builder.AddUnityLogger());
 
             _hostBuilder.ConfigureAppConfiguration(ConfigureAppConfiguration);
-            _hostBuilder.ConfigureServices(services => { services.SuppressStatusMessages(suppressStatusMessages); });
-
             _hostBuilder.ConfigureServices(ConfigureServices);
             _hostBuilder.ConfigureMonoBehaviours(ConfigureUnityObjects);
+            
             ConfigureExtra(_hostBuilder);
             OnAwake();
 
