@@ -22,32 +22,32 @@ namespace Microsoft.Extensions.Hosting.Unity
         private const int MIN_GRACEFUL_SHUTDOWN_TIMEOUT_MS = 100;
 
         [Tooltip("Application name for the HostingEnvironment")]
-        [SerializeField] private string hostApplicationName;
+        [SerializeField] protected string hostApplicationName;
 
         [Tooltip("The method name which will be used to inject Host services. Works like constructor injection in ordinary classes, but since MonoBehaviours can't use constructors, this method will be used instead")]
-        [SerializeField] private string servicesInjectionMethodName = DEFAULT_INJECTION_METHOD_NAME;
+        [SerializeField] protected string servicesInjectionMethodName = DEFAULT_INJECTION_METHOD_NAME;
 
         [Tooltip("If false, " + nameof(BuildManually) + "() method needs to be called to build the host")]
-        [SerializeField] private bool buildOnAwake = true;
+        [SerializeField] protected bool buildOnAwake = true;
 
-        [SerializeField] private bool controlUnityLifetime;
+        [SerializeField] protected bool controlUnityLifetime;
 
         [Tooltip("Timeout for the host to shutdown gracefully")]
-        [SerializeField] private int gracefulShutduwnTimeoutMs = DEFAULT_GRACEFUL_SHUTDOWN_TIMEOUT_MS;
+        [SerializeField] protected int gracefulShutduwnTimeoutMs = DEFAULT_GRACEFUL_SHUTDOWN_TIMEOUT_MS;
 
         [Header("Logging")]
         [Tooltip("Use Unity Debug.Log to print log messages")]
-        [SerializeField] private bool logToUnity = true;
+        [SerializeField] protected bool logToUnity = true;
         
         [Tooltip("Minimum log level")]
-        [SerializeField] private LogLevel logLevel = LogLevel.Information;
+        [SerializeField] protected LogLevel logLevel = LogLevel.Information;
 
         [Tooltip("Will suppress host lifetime messages logging if set to true")]
-        [SerializeField] private bool suppressStatusMessages;
+        [SerializeField] protected bool suppressStatusMessages;
 
         [Header("Options")]
         [Tooltip("Optional command line arguments to pass into the Host")]
-        [SerializeField] private string[] cmdArguments;
+        [SerializeField] protected string[] cmdArguments;
 
         [Header("Events")]
         [SerializeField] protected UnityEvent hostBuilt;
