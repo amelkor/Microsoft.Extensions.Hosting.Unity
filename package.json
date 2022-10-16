@@ -1,6 +1,6 @@
 {
   "name": "com.blacksmallriver.hosting",
-  "author": "Aleksei Melkor (https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)",
+  "author": "Black Small River (https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)",
   "displayName": "Microsoft.Extensions.Hosting for Unity",
   "description": "Microsoft.Extensions.Hosting adopted for Unity",
   "unity": "2021.1",
