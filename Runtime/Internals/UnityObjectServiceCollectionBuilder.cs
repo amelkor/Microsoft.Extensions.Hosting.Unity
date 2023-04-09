@@ -164,7 +164,6 @@ namespace Microsoft.Extensions.Hosting.Unity
 
             return this;
         }
-
         /// <inheritdoc/>
         public IUnityObjectServiceCollectionBuilder AddMonoBehaviourTransient<T>() where T : MonoBehaviour
         {
@@ -245,6 +244,71 @@ namespace Microsoft.Extensions.Hosting.Unity
                 });
             });
             
+            return this;
+        }
+
+        
+        /// <inheritdoc/>
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabSingleton<T>(string resourcesPath) where T : MonoBehaviour
+        {
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                var prefab = Resources.Load<T>(resourcesPath);
+                
+                services.AddSingleton<T>(provider =>
+                {
+                    var root = GetHostRoot(context);
+                    var go = UnityEngine.Object.Instantiate(prefab.gameObject, root.GameObject.transform);
+                    var component = go.GetComponent<T>();
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
+
+                    return component;
+                });
+            });
+
+            return this;
+        }
+        
+        /// <inheritdoc/>
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabTransient<T>(string resourcesPath) where T : MonoBehaviour
+        {
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                var prefab = Resources.Load<T>(resourcesPath);
+                
+                services.AddTransient<T>(provider =>
+                {
+                    var go = UnityEngine.Object.Instantiate(prefab.gameObject);
+                    var component = go.GetComponent<T>();
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
+
+                    return component;
+                });
+            });
+
+            return this;
+        }
+
+        public IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabScoped<T>(string resourcesPath) where T : MonoBehaviour
+        {
+            _hostBuilder.ConfigureServices((context, services) =>
+            {
+                var prefab = Resources.Load<T>(resourcesPath);
+                
+                services.AddScoped<T>(provider =>
+                {
+                    var s = provider.GetService<ScopeRoot>();
+                    var go = UnityEngine.Object.Instantiate(prefab.gameObject, s.root.transform);
+                    var component = go.GetComponent<T>();
+                    InjectServices(component, provider, _serviceInjectionMethodName);
+                    SetupLifetime(component, provider);
+
+                    return component;
+                });
+            });
+
             return this;
         }
 

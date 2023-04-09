@@ -128,7 +128,13 @@ namespace Microsoft.Extensions.Hosting.Unity
             _hostBuilder.UseMonoBehaviourServiceCollection(servicesInjectionMethodName);
             _hostBuilder.ConfigureServices((context, services) =>
             {
-                var root = new GameObject($"{nameof(MonoBehaviourHostRoot)} (host root)");
+                var root = new GameObject($"{nameof(MonoBehaviourHostRoot)} (host root)")
+                {
+                    transform =
+                    {
+                        parent = transform
+                    }
+                };
                 var component = root.AddComponent<MonoBehaviourHostRoot>();
 
                 context.Properties.Add(Constants.MonoBehaviourHostRootInstanceKey, component);
@@ -152,6 +158,8 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         #region Public API methods
+
+        public void SetArgs(params string[] args) => cmdArguments = args;
 
         /// <summary>
         /// Build the <see cref="IHost"/> if <see cref="buildOnAwake"/> set to false.
@@ -197,6 +205,7 @@ namespace Microsoft.Extensions.Hosting.Unity
             if (host != null)
             {
                 _cts?.Cancel();
+                host.StopAsync().GetAwaiter().GetResult();
             }
         }
 
@@ -207,6 +216,11 @@ namespace Microsoft.Extensions.Hosting.Unity
             try
             {
                 _isBuilt = true;
+                _hostBuilder.ConfigureServices(collection =>
+                {
+                    var lookup = new ServicesLookup(collection);
+                    collection.AddSingleton(lookup);
+                });
                 host = _hostBuilder.Build();
 
                 var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
@@ -246,15 +260,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     });
                 }
 
-                Application.quitting += () =>
-                {
-                    _cts?.Cancel();
-                    using var cts = new CancellationTokenSource(gracefulShutduwnTimeoutMs);
-                    host.StopAsync(cts.Token)
-                        .GetAwaiter()
-                        .GetResult();
-                    host?.Dispose();
-                };
+                Application.quitting += OnApplicationQuitting;
 
                 hostBuilt?.Invoke();
                 hostBuilt?.RemoveAllListeners();
@@ -264,6 +270,16 @@ namespace Microsoft.Extensions.Hosting.Unity
                 _isBuilt = false;
                 throw;
             }
+        }
+
+        private void OnApplicationQuitting()
+        {
+            _cts?.Cancel();
+            using var cts = new CancellationTokenSource(gracefulShutduwnTimeoutMs);
+            host.StopAsync(cts.Token)
+                .GetAwaiter()
+                .GetResult();
+            host?.Dispose();
         }
 
         #region Host control by Unity events
@@ -355,5 +371,13 @@ namespace Microsoft.Extensions.Hosting.Unity
                 gracefulShutduwnTimeoutMs = DEFAULT_GRACEFUL_SHUTDOWN_TIMEOUT_MS;
         }
 #endif
+
+        private void OnDestroy()
+        {
+            Application.quitting -= OnApplicationQuitting;
+            
+            host?.Dispose();
+            _cts?.Dispose();
+        }
     }
 }

@@ -22,5 +22,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton(ScriptableObject scriptableObject, Type type);
         IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T>(T scriptableObject) where T : ScriptableObject;
         IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T, TImpl>(TImpl scriptableObject) where T : ScriptableObject where TImpl : ScriptableObject, T;
+
+        IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabSingleton<T>(string resourcesPath) where T : MonoBehaviour;
+        IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabTransient<T>(string resourcesPath) where T : MonoBehaviour;
+        IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabScoped<T>(string resourcesPath) where T : MonoBehaviour;
     }
 }

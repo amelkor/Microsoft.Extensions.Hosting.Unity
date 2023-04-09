@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Microsoft.Extensions.Hosting.Unity.Logging
 {
@@ -20,8 +21,15 @@ namespace Microsoft.Extensions.Hosting.Unity.Logging
             _config = config;
         }
 
+#if UNITY_2022_2_OR_NEWER
+        [UnityEngine.HideInCallstack]
+#endif
         public bool IsEnabled(LogLevel logLevel) => true;
 
+        [DebuggerStepThrough]
+#if UNITY_2022_2_OR_NEWER
+        [UnityEngine.HideInCallstack]
+#endif
         public void Log<TState>(
             LogLevel logLevel,
             EventId eventId,

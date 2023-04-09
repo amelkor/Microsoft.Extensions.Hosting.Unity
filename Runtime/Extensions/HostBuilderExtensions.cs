@@ -52,6 +52,7 @@ namespace Microsoft.Extensions.Hosting.Unity
 
             var monoCollection = new UnityObjectServiceCollectionBuilder(hostBuilder, monoBehaviourInjectMethodName);
             hostBuilder.Properties.Add(MONO_BEHAVIOUR_BUILDER_KEY, monoCollection);
+            hostBuilder.ConfigureServices(collection => collection.AddScoped<ScopeRoot>());
 
             return hostBuilder;
         }

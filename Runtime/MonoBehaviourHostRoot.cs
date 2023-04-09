@@ -7,6 +7,7 @@ namespace Microsoft.Extensions.Hosting.Unity
     /// </summary>
     internal interface IMonoBehaviourHostRoot
     {
+        GameObject GameObject { get; }
         T AddComponent<T>() where T : MonoBehaviour;
     }
 
@@ -21,6 +22,7 @@ namespace Microsoft.Extensions.Hosting.Unity
             _root = gameObject;
         }
 
+        public GameObject GameObject => _root;
         public T AddComponent<T>() where T : MonoBehaviour => _root.AddComponent<T>();
     }
 }
