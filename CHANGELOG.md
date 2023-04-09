@@ -1,5 +1,10 @@
 # Microsoft.Extensions.Hosting for Unity
 
+## [2.1.0] - 2023-04-09
+### Updated
+- Scoped MonoBehaviours
+- MonoBehaviour prefabs registration by prefab name from Resources
+
 ## [2.0.0] - 2022-07-21
 ### Updated
 - .NET libraries updated to v6.0.0
@@ -18,7 +23,7 @@
 - Trace output formatting for unity logger
 
 ## [1.2.0] - 2021-07-23
-### Fixeds
+### Fixed
 - Removed reload on change for FileConfigurationSources (caused UnityEditor to enter play mode with long delay)
 
 ### Added
