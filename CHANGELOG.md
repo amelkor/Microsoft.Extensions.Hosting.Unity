@@ -6,6 +6,8 @@
 - MonoBehaviour prefabs registration by prefab name from Resources
 - ScriptableObjectConfiguration as configuration source
 - hostBuilding event when the host is being built
+### Updated
+- make HostManager events public
 
 ## [2.0.0] - 2022-07-21
 ### Updated
