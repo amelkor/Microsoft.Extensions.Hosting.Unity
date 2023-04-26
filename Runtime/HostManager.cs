@@ -50,6 +50,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         [SerializeField] protected string[] cmdArguments;
 
         [Header("Events")]
+        [SerializeField] protected UnityEvent<IHostBuilder> hostBuilding;
         [SerializeField] protected UnityEvent hostBuilt;
         [SerializeField] protected UnityEvent hostStarted;
         [SerializeField] protected UnityEvent hostStopping;
@@ -216,6 +217,9 @@ namespace Microsoft.Extensions.Hosting.Unity
             try
             {
                 _isBuilt = true;
+                
+                hostBuilding.Invoke(_hostBuilder);
+                
                 _hostBuilder.ConfigureServices(collection =>
                 {
                     var lookup = new ServicesLookup(collection);
