@@ -1,11 +1,12 @@
 # Microsoft.Extensions.Hosting for Unity
 
-## [2.1.0] - 2023-04-09
+## [2.1.0] - 2023-05-03
 ### Added
 - Scoped MonoBehaviours
-- MonoBehaviour prefabs registration by prefab name from Resources
-- ScriptableObjectConfiguration as configuration source
+- `MonoBehaviour` prefabs registration by prefab name from Resources
+- `ScriptableObjectConfiguration` as configuration source
 - hostBuilding event when the host is being built
+- `StopManuallyAsync` method to `HostManager`
 ### Updated
 - make HostManager events public
 

@@ -195,7 +195,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <summary>
-        /// Start the Host manually.
+        /// Stop the Host manually.
         /// </summary>
         /// <exception cref="InvalidOperationException">when the Host was not build and started yet.</exception>
         public void StopManually()
@@ -208,6 +208,24 @@ namespace Microsoft.Extensions.Hosting.Unity
                 _cts?.Cancel();
                 host.StopAsync().GetAwaiter().GetResult();
             }
+        }
+        
+        /// <summary>
+        /// Stop the Host manually.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">when the Host was not build and started yet.</exception>
+        public Task StopManuallyAsync()
+        {
+            if (!_isBuilt && !_isStarted)
+                throw new InvalidOperationException("Host must be build and started before stop.");
+
+            if (host != null)
+            {
+                _cts?.Cancel();
+                return host.StopAsync();
+            }
+
+            return Task.CompletedTask;
         }
 
         #endregion
