@@ -232,7 +232,7 @@ namespace Microsoft.Extensions.Hosting.Unity
             return this;
         }
 
-        public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T, TImpl>(TImpl scriptableObject) where T : ScriptableObject where TImpl : ScriptableObject, T
+        public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T, TImpl>(TImpl scriptableObject) where T : class where TImpl : ScriptableObject, T
         {
             _hostBuilder.ConfigureServices(services =>
             {
