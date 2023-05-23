@@ -31,6 +31,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// <inheritdoc/>
         public IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton(MonoBehaviour component, Type type = default, bool useHostLifetime = false)
         {
+            if (!component)
+                throw new ArgumentNullException(nameof(component), "Component is missing");
+            
             _hostBuilder.ConfigureServices(services =>
             {
                 type ??= component.GetType();
@@ -111,6 +114,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// <inheritdoc/>
         public IUnityObjectServiceCollectionBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where TImpl : MonoBehaviour, T where T : class
         {
+            if (!component)
+                throw new ArgumentNullException(nameof(component), "Component is missing");
+            
             _hostBuilder.ConfigureServices(services =>
             {
                 services.AddSingleton<T>(provider =>
@@ -204,6 +210,9 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton(ScriptableObject scriptableObject, Type type)
         {
+            if (!scriptableObject)
+                throw new ArgumentNullException(nameof(scriptableObject), "ScriptableObject is missing");
+            
             _hostBuilder.ConfigureServices(services =>
             {
                 services.AddSingleton(type, provider =>
@@ -219,6 +228,9 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T>(T scriptableObject) where T : ScriptableObject
         {
+            if (!scriptableObject)
+                throw new ArgumentNullException(nameof(scriptableObject), "ScriptableObject is missing");
+
             _hostBuilder.ConfigureServices(services =>
             {
                 services.AddSingleton<T>(provider =>
@@ -234,6 +246,9 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         public IUnityObjectServiceCollectionBuilder AddScriptableObjectSingleton<T, TImpl>(TImpl scriptableObject) where T : class where TImpl : ScriptableObject, T
         {
+            if (!scriptableObject)
+                throw new ArgumentNullException(nameof(scriptableObject), "ScriptableObject is missing");
+            
             _hostBuilder.ConfigureServices(services =>
             {
                 services.AddSingleton<T>(provider =>
@@ -251,6 +266,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// <inheritdoc/>
         public IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabSingleton<T>(string resourcesPath) where T : MonoBehaviour
         {
+            if (string.IsNullOrWhiteSpace(resourcesPath))
+                throw new ArgumentNullException(nameof(resourcesPath), "Resources path is missing");
+
             _hostBuilder.ConfigureServices((context, services) =>
             {
                 var prefab = Resources.Load<T>(resourcesPath);
@@ -273,6 +291,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// <inheritdoc/>
         public IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabTransient<T>(string resourcesPath) where T : MonoBehaviour
         {
+            if (string.IsNullOrWhiteSpace(resourcesPath))
+                throw new ArgumentNullException(nameof(resourcesPath), "Resources path is missing");
+
             _hostBuilder.ConfigureServices((context, services) =>
             {
                 var prefab = Resources.Load<T>(resourcesPath);
@@ -293,6 +314,9 @@ namespace Microsoft.Extensions.Hosting.Unity
 
         public IUnityObjectServiceCollectionBuilder AddMonoBehaviourPrefabScoped<T>(string resourcesPath) where T : MonoBehaviour
         {
+            if (string.IsNullOrWhiteSpace(resourcesPath))
+                throw new ArgumentNullException(nameof(resourcesPath), "Resources path is missing");
+
             _hostBuilder.ConfigureServices((context, services) =>
             {
                 var prefab = Resources.Load<T>(resourcesPath);

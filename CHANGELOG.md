@@ -7,6 +7,7 @@
 - `ScriptableObjectConfiguration` as configuration source
 - hostBuilding event when the host is being built
 - `StopManuallyAsync` method to `HostManager`
+- Replace `Host` with `UnityHost` to remove console lifetime that was preventing IL2CPP building on Windows
 ### Updated
 - make HostManager events public
 

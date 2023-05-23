@@ -115,15 +115,18 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// </summary>
         /// <returns>IHostBuilder.</returns>
         // ReSharper disable once VirtualMemberNeverOverridden.Global
-        protected virtual IHostBuilder CreateHostBuilder() => Host.CreateDefaultBuilder(cmdArguments);
+        protected virtual IHostBuilder CreateHostBuilder() => UnityHost.CreateDefaultBuilder(cmdArguments);
         
         private void Awake()
         {
             _hostBuilder = CreateHostBuilder();
-            _hostBuilder.ConfigureAppConfiguration(builder => { builder.DisableFileConfigurationSourceReloadOnChange(); });
+            _hostBuilder.ConfigureAppConfiguration(builder =>
+            {
+                builder.DisableFileConfigurationSourceReloadOnChange();
+                builder.AddCommandLine(cmdArguments);
+            });
             _hostBuilder.ConfigureLogging((_, loggingBuilder) =>
             {
-                loggingBuilder.ClearProviders();
                 loggingBuilder.SetMinimumLevel(logLevel);
             });
             _hostBuilder.UseMonoBehaviourServiceCollection(servicesInjectionMethodName);
@@ -243,6 +246,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                     var lookup = new ServicesLookup(collection);
                     collection.AddSingleton(lookup);
                 });
+                
                 host = _hostBuilder.Build();
 
                 var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
@@ -287,7 +291,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 hostBuilt?.Invoke();
                 hostBuilt?.RemoveAllListeners();
             }
-            catch (Exception)
+            catch (Exception) when(!System.Diagnostics.Debugger.IsAttached)
             {
                 _isBuilt = false;
                 throw;
@@ -367,7 +371,7 @@ namespace Microsoft.Extensions.Hosting.Unity
                 _isStarted = true;
                 await host.StartAsync(_cts.Token);
             }
-            catch (Exception)
+            catch (Exception) when(!System.Diagnostics.Debugger.IsAttached)
             {
                 _isStarted = false;
                 throw;
