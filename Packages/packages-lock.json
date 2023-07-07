@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "com.blacksmallriver.hosting": {
-      "version": "file:com.blacksmallriver.generic-host-unity",
+    "com.cmdexecutor.dotnet-generic-host": {
+      "version": "file:com.cmdexecutor.dotnet-generic-host",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

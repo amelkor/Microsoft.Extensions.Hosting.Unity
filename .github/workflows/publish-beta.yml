@@ -21,9 +21,9 @@ jobs:
        registry-url: https://registry.npmjs.org/
        
      # Command to install the package dependencies
-   - run: cd Packages/com.blacksmallriver.generic-host-unity && yarn install   
+   - run: cd Packages/com.cmdexecutor.dotnet-generic-host && yarn install   
      
      # Publish to npm
-   - run: cd Packages/com.blacksmallriver.generic-host-unity && npm publish --access public --tag preview
+   - run: cd Packages/com.cmdexecutor.dotnet-generic-host && npm publish --access public --tag preview
      env:
        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
