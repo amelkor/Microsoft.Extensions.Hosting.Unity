@@ -1,4 +1,4 @@
-![Preview](Editor/Gizmos/host_service_icon.png)
+![Preview](Packages/com.cmdexecutor.dotnet-generic-host/Editor/Gizmos/host_service_icon.png)
  
 [![Twitter Follow](https://img.shields.io/twitter/follow/AlekseyMelkor?color=blue&label=Follow%20on%20Twitter&logo=%20&logoColor=%20&style=flat-square)](https://twitter.com/AlekseyMelkor)
 
