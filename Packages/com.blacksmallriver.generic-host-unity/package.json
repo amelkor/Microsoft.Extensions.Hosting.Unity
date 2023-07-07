@@ -1,11 +1,11 @@
 {
-  "name": "com.blacksmallriver.hosting",
-  "author": "Black Small River (https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)",
+  "name": "com.cmdexecutor.dotnet-generic-host",
+  "author": "cmdexecutor (https://docs.microsoft.com/ru-ru/dotnet/core/extensions/dependency-injection-usage)",
   "displayName": "Microsoft.Extensions.Hosting for Unity",
-  "description": "Microsoft.Extensions.Hosting adapted for Unity",
+  "description": ".NET Generic Host adapted for Unity",
   "unity": "2021.1",
   "release": "0f1",
-  "version": "3.0.0-preview.4",
+  "version": "3.0.0-preview.5",
   "keywords": [
     "unity",
     "integration",
