@@ -1,5 +1,12 @@
 # Microsoft.Extensions.Hosting for Unity
 
+## [3.0.0] - 2023-07-07
+### Updated
+- rework Unity objects registration
+- allow to use HostBuilderContext in registrations
+- update Microsoft libs to version 7
+- add sample Unity project
+
 ## [2.1.0] - 2023-05-03
 ### Added
 - Scoped MonoBehaviours
