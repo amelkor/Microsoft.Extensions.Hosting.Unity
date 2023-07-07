@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         IUnityObjectsConfigurator AddMonoBehaviourPrefabSingleton<T>(string resourcesPath) where T : MonoBehaviour;
         
         /// <summary>
-        /// Load prefab from Resources and register as transient.
+        /// Load prefab from Resources and register as transient (Spawns in scene root).
         /// </summary>
         /// <param name="resourcesPath">Resources asset path.</param>
         /// <typeparam name="T">MonoBehaviour type.</typeparam>

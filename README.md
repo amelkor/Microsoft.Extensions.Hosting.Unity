@@ -8,51 +8,104 @@ The documentation can be found here: [Tutorial: Use dependency injection in .NET
 
 ## Install
 
-### UPM Package install via npmjs:
-
-Add the entry below to the project's manifest.json
-
-```json
-    "scopedRegistries": [
-      {
-        "name": "microsoft.extensions.hosting",
-        "url": "https://registry.npmjs.org",
-        "scopes": [
-          "com.blacksmallriver.hosting",
-          "com.blacksmallriver"
-        ]
-      }
-    ]
-```
-Or add it in Unity Editor:
-
-> Project Settings -> Package Manager -> Scoped Registries
-> 
-> name: microsoft.extensions.hosting
-> 
-> URL: https://registry.npmjs.org
-> 
-> scope: com.blacksmallriver.hosting
-
-### UPM Package install via git URL (no package updates will be available this way):
-
-> Requires a version of unity that supports path query parameter for git packages (Unity >= 2019.3.4f1).
-
-Add https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git to Unity Package Manager
+### By git url:
+Add `https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git?path=Packages/com.cmdexecutor.dotnet-generic-host` to Unity Package Manager
 
 ## Getting started
 
-> Check the [Demo Project](https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity-Demo)
+> The [repository](https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity) contains demo Unity project.
 
-Injection into `Monobehaviour` classes happens via custom defined private method which name is specified as `Services Injection Method Name` parameter. The default name is `AwakeServices`. Could be adjusted in the Unity Inspector window.
+Injection into `Monobehaviour` classes happens via custom defined private method which name is specified as `Services Injection Method Name` parameter in Inspector or ``. The default name is `AwakeServices`. Could be adjusted in the Unity Inspector window.
 
-To get started, you need to implement a `HostManager`
+To get started, derive from `HostManager` and add the derived class to a GameObject on scene, that's mostly it.
 
-A new instance of `Host` could be created like:
 ```cs
-            var hostBuilder = Host.CreateDefaultBuilder()
-                .ConfigureLogging((_, loggingBuilder) => { loggingBuilder.ClearProviders(); })
-                .UseMonoBehaviourServiceCollection(/*Services Injection Method Name for MonoBehaviour*/)
+    public class SampleHost : HostManager
+    {
+        [Tooltip("Could be used for referencing ScriptableObjects and as configuration provider")]
+        [SerializeField] private ConfigurationScriptableObject configuration;
+        
+        [Tooltip("UI instance from scene of from SampleHost GameObject hierarchy")]
+        [SerializeField] private SampleUI sampleUI;
+
+        protected override void OnAwake()
+        {
+            // Awake called before host build
+            // if buildOnAwake is false (can be controlled through Inspector) then host needs to be build manually
+            // By default builds on Awake
+            buildOnAwake = false;
+
+            // Use custom methods name for Unity Objects (default is AwakeServices)
+            // The services will be injected into ctor
+            // servicesInjectionMethodName = "CustomInjectionMethodName";
+
+            // Call from the desired place to build the host if buildOnAwake = false;
+            BuildManually();
+
+            // Stops the host
+            // StopManually(); or StopManuallyAsync();
+        }
+
+        protected override void ConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder builder)
+        {
+            Debug.Log("ConfigureAppConfiguration");
+            
+            // Add SO as configuration source, will parse all attributes from the SO and make them accessible from IConfiguration
+            builder.AddScriptableObjectConfiguration<ConfigurationScriptableObject>(configuration);
+        }
+
+        protected override void ConfigureLogging(HostBuilderContext context, ILoggingBuilder builder)
+        {
+            Debug.Log("ConfigureLogging");
+        }
+
+        protected override void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+        {
+            // Register ordinary C# classes
+            Debug.Log("ConfigureServices");
+        }
+
+        protected override void ConfigureUnityObjects(HostBuilderContext context, IUnityObjectsConfigurator services)
+        {
+            Debug.Log("ConfigureUnityObjects");
+            
+            foreach (var (type, so) in configuration.GetScriptableObjectsToRegisterAsSingeltons())
+                services.AddScriptableObjectSingleton(so, type);
+
+            // Registers already instantiated instance under HostRoot GameObject
+            services.AddMonoBehaviourSingleton(sampleUI);
+
+            // Register as hosted service (will be resolved and start automatically when host start)
+            services.AddMonoBehaviourHostedService<MonoHostedService>();
+
+            // Creates new instances under HostRoot GameObject
+            services.AddMonoBehaviourSingleton<MonoSingleton>();
+            services.AddMonoBehaviourTransient<MonoTransient>();
+            
+            // Or creates new instance in scene root
+            // services.AddDetachedMonoBehaviourSingleton<MonoSingleton>();
+
+            Debug.Log($"SampleInteger config value from registered SO: {context.Configuration["SampleInteger"]}");
+            
+            // Loads from Resources (spawns detached)
+            services.AddMonoBehaviourPrefabTransient<RandomMoveObject>(configuration.movingObjectPrefabName);
+        }
+    }
+```
+
+In case if `Host` needs to be composed manually, a minimal configuration could be similar to following:
+```cs
+            var hostBuilder = UnityHost.CreateDefaultBuilder(servicesInjectionMethodName, cmdArguments)
+                .ConfigureAppConfiguration(builder =>
+                {
+                    builder.DisableFileConfigurationSourceReloadOnChange();
+                    builder.AddCommandLine(cmdArguments);
+                });
+                .ConfigureLogging((_, loggingBuilder) =>
+                {
+                    loggingBuilder.SetMinimumLevel(logLevel);
+                });
+                .ConfigureUnityObjects((context, configurator) => {/*Add Mono services*/})
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton<IMonoBehaviourHostRoot, MonoBehaviourHostRoot>(provider =>
@@ -87,68 +140,6 @@ A new instance of `Host` could be created like:
             // stop the host
             await host.StopAsync()
 ```
-
-`loggingBuilder.ClearProviders();` is needed since `DefaultHostBuilder` uses some default logging stuff not available in Unity.
-
-> to log into Unity's console use `hostBuilder.ConfigureLogging(builder => builder.AddUnityLogger());`
-
-Also there's a way to quickly setup a new Host via deriving from the default template MonoBehaviour class `HostManager` and attach it to a gameobject. 
-
-The settings are available through the Inspector window.
-
-```cs
-    /// <summary>
-    /// Example implementation.
-    /// </summary>
-    public class DemoHostManager : HostManager
-    {
-        protected override void ConfigureAppConfiguration(IConfigurationBuilder builder)
-        {
-            // add a configuration providers here
-        }
-
-        protected override void ConfigureLogging(ILoggingBuilder builder)
-        {
-            // add a logger library here
-        }
-
-        protected override void ConfigureServices(IServiceCollection services)
-        {
-            // add ordinary C# classes services here
-            
-            // transient is also supported
-            //services.AddTransient<JustService>();
-            
-            services.AddSingleton<JustService>();
-            
-            // hosted services could be added by their interfaces as well
-            services.AddHostedService<IHostedServiceContract, PocHostedService>();
-        }
-
-        protected override void ConfigureMonoBehaviours(IMonoBehaviourServiceCollectionBuilder services)
-        {
-            // add MonoBehaviour classes services here
-            // all MonoBehaviour singltones will be attached to a single gameObject created at runtime
-            
-            // transient will be created as new gameObject
-            // services.AddMonoBehaviourTransient<DemoMono>();
-            
-            services.AddMonoBehaviourSingleton<DemoMono>();
-            services.AddMonoBehaviourSingleton<BehaviourTestComponent>();
-            
-            // ScriptableObject's must be passed as an existing instance
-            services.services.AddScriptableObjectSingleton(instance, typeof(MyScriptableObject));
-            
-            // a MonoBehaviour with IHostedService implementation
-            services.AddMonoBehaviourHostedService<GameModeService>();
-        }
-```
-
-Then create a new GameObject and attach the script.
-
-### GlobalSettings for Host
-
-Inheriting from `GlobalSettings` class allows to have a settings file under `Config/globalsettings.json` path of the Unity application. Any property in the derived class would be saved into the file and read on the host starting.
 
 ## Licensing
 - The asset: MIT License, see  [LICENSE.md](LICENSE.md) for more information.
