@@ -19,11 +19,8 @@ jobs:
      with:
        node-version: 12
        registry-url: https://registry.npmjs.org/
- 
-   # Command to install the package dependencies
-   - run: yarn install
    
    # Publish to npm
-   - run: npm publish --access public --tag preview
+   - run: cd Packages/com.blacksmallriver.generic-host-unity/ && npm publish --access public --tag preview
      env:
        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
