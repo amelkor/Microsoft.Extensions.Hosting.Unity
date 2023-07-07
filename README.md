@@ -1,6 +1,6 @@
 ![Preview](Packages/com.cmdexecutor.dotnet-generic-host/Editor/Gizmos/host_service_icon.png)
  
-[![Twitter Follow](https://img.shields.io/twitter/follow/AlekseyMelkor?color=blue&label=Follow%20on%20Twitter&logo=%20&logoColor=%20&style=flat-square)](https://twitter.com/AlekseyMelkor)
+[![Twitter Follow](https://img.shields.io/twitter/follow/cmdexecutor?color=blue&label=Follow%20on%20Twitter&logo=%20&logoColor=%20&style=flat-square)](https://twitter.com/cmdexecutor)
 
 # .NET Generic Host for Unity3D
 #### This package allows to use DI Hosting (_Microsoft.Extensions.Hosting_) in Unity projects.
