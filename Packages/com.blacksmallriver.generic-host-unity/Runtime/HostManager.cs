@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         [SerializeField] public UnityEvent hostStopping;
         [SerializeField] public UnityEvent hostStopped;
 
-        private IHostBuilder _hostBuilder;
+        private IUnityHostBuilder _hostBuilder;
 
         // ReSharper disable once MemberCanBePrivate.Global
         protected IHost host;
@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         protected abstract void ConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder builder);
         protected abstract void ConfigureLogging(HostBuilderContext context, ILoggingBuilder builder);
         protected abstract void ConfigureServices(HostBuilderContext context, IServiceCollection services);
-        protected abstract void ConfigureUnityObjects(HostBuilderContext context, IMonoObjectsBuilder services);
+        protected abstract void ConfigureUnityObjects(HostBuilderContext context, IUnityObjectsConfigurator services);
         
         // ReSharper disable once MemberCanBeProtected.Global
         /// <summary>
@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// </summary>
         /// <returns>IHostBuilder.</returns>
         // ReSharper disable once VirtualMemberNeverOverridden.Global
-        protected virtual IHostBuilder CreateHostBuilder() => UnityHost.CreateDefaultBuilder(cmdArguments);
+        protected virtual IUnityHostBuilder CreateHostBuilder() => UnityHost.CreateDefaultBuilder(servicesInjectionMethodName, cmdArguments);
         
         private void Awake()
         {
@@ -128,7 +128,6 @@ namespace Microsoft.Extensions.Hosting.Unity
             {
                 loggingBuilder.SetMinimumLevel(logLevel);
             });
-            _hostBuilder.UseMonoBehaviourServiceCollection(servicesInjectionMethodName);
             _hostBuilder.ConfigureServices((context, services) =>
             {
                 var root = new GameObject($"{nameof(MonoBehaviourHostRoot)} (host root)")
@@ -151,7 +150,7 @@ namespace Microsoft.Extensions.Hosting.Unity
 
             _hostBuilder.ConfigureAppConfiguration(ConfigureAppConfiguration);
             _hostBuilder.ConfigureServices(ConfigureServices);
-            _hostBuilder.ConfigureMonoBehaviours(ConfigureUnityObjects);
+            _hostBuilder.ConfigureUnityObjects(ConfigureUnityObjects);
             
             ConfigureExtra(_hostBuilder);
             OnAwake();

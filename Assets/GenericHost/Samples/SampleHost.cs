@@ -24,9 +24,11 @@ namespace GenericHost.Samples
             Debug.Log("ConfigureServices");
         }
 
-        protected override void ConfigureUnityObjects(HostBuilderContext context, IMonoObjectsBuilder services)
+        protected override void ConfigureUnityObjects(HostBuilderContext context, IUnityObjectsConfigurator services)
         {
             Debug.Log("ConfigureUnityObjects");
+
+            services.AddMonoBehaviourHostedService<MonoHostedService>();
         }
     }
 }

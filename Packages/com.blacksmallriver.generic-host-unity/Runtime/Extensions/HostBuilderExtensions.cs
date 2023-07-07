@@ -1,10 +1,6 @@
 ﻿using System;
-using System.IO;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.Unity.Configuration;
-using UnityEngine;
 
 namespace Microsoft.Extensions.Hosting.Unity
 {
@@ -14,47 +10,6 @@ namespace Microsoft.Extensions.Hosting.Unity
     public static class HostBuilderExtensions
     {
         private const string INJECTABLE_METHOD_NAME = "AwakeServices";
-        private const string MONO_HOST_BUILDER_KEY = "MonoHostBuilder";
-
-        /// <summary>
-        /// Add <see cref="MonoBehaviour"/> classes to this <see cref="IHost"/> services.
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="configureDelegate"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        public static IHostBuilder ConfigureMonoBehaviours(this IHostBuilder builder, Action<HostBuilderContext, IMonoObjectsBuilder> configureDelegate)
-        {
-            if (!builder.Properties.TryGetValue(MONO_HOST_BUILDER_KEY, out var monoCollectionObject))
-            {
-                throw new ArgumentException("Mono builder is not registered in HostBuilder. Call " + nameof(UseMonoBehaviourServiceCollection) + " on IHostBuilder first");
-            }
-
-            var monoCollection = (MonoHostBuilder) monoCollectionObject;
-            monoCollection.ConfigureUnityObjects(configureDelegate);
-
-            return builder;
-        }
-
-        /// <summary>
-        /// Enable <see cref="MonoBehaviour"/> in this <see cref="IHost"/> container.
-        /// </summary>
-        /// <param name="hostBuilder"></param>
-        /// <param name="monoBehaviourInjectMethodName">Method name to use to inject services into <see cref="MonoBehaviour"/> classes.</param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException">When this method was already called once.</exception>
-        internal static IMonoHostBuilder UseMonoBehaviourServiceCollection(this IHostBuilder hostBuilder, string monoBehaviourInjectMethodName)
-        {
-            if (hostBuilder.Properties.ContainsKey(MONO_HOST_BUILDER_KEY))
-            {
-                throw new InvalidOperationException(nameof(UseMonoBehaviourServiceCollection) + " can not be called twice");
-            }
-
-            var monoHostBuilder = new MonoHostBuilder(hostBuilder, monoBehaviourInjectMethodName);
-            hostBuilder.Properties.Add(MONO_HOST_BUILDER_KEY, monoHostBuilder);
-
-            return monoHostBuilder;
-        }
 
         /// <summary>
         /// Allows to register a specific <see cref="IHostedService"/> implementation to be injected.
@@ -129,7 +84,7 @@ namespace Microsoft.Extensions.Hosting.Unity
         /// <param name="hostBuilder"></param>
         /// <typeparam name="TSettings"></typeparam>
         // ReSharper disable once CognitiveComplexity
-        // todo revise or remove
+        // todo convert to persistent storage settings
         public static void UseGlobalSettings<TSettings>(this IHostBuilder hostBuilder) where TSettings : GlobalSettings, new()
         {
             const string globalSettingsConfigured = "GLOBALSETTINGS_CONFIGURED";
@@ -155,34 +110,5 @@ namespace Microsoft.Extensions.Hosting.Unity
                 }
             });
         }
-
-        #region private methods
-
-        // todo revise or remove
-        private static void SetupUnityComponent<T>(T component, IServiceProvider provider) where T : MonoBehaviour
-        {
-            if (typeof(T).TryGetInjectionMethod(INJECTABLE_METHOD_NAME, out var inject))
-            {
-                var instances = new object[inject.types.Length];
-                for (var i = 0; i < inject.types.Length; i++)
-                {
-                    instances[i] = provider.GetRequiredService(inject.types[i]);
-                }
-
-                inject.method.Invoke(component, instances);
-            }
-
-            var lifetime = provider.GetRequiredService<IApplicationLifetime>();
-            lifetime.ApplicationStopping.Register(() =>
-            {
-                if (!component)
-                    return;
-
-                component.StopAllCoroutines();
-                component.CancelInvoke();
-            });
-        }
-
-        #endregion
     }
 }

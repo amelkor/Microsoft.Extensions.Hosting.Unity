@@ -1,9 +1,7 @@
 ﻿using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.EventLog;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -13,16 +11,16 @@ namespace Microsoft.Extensions.Hosting.Unity
     public static class UnityHost
     {
         [Preserve]
-        public static IHostBuilder CreateDefaultBuilder() => CreateDefaultBuilder(args: null);
+        public static IHostBuilder CreateDefaultBuilder(string servicesInjectionMethodName) => CreateDefaultBuilder(servicesInjectionMethodName, args: null);
         
         [Preserve]
-        public static IHostBuilder CreateDefaultBuilder(string[] args)
+        public static IUnityHostBuilder CreateDefaultBuilder(string servicesInjectionMethodName, string[] args)
         {
-            HostBuilder builder = new();
+            var builder = new UnityHostBuilder(servicesInjectionMethodName);
             return builder.ConfigureDefaults(args);
         }
         
-        private static IHostBuilder ConfigureDefaults(this IHostBuilder builder, string[] args)
+        private static IUnityHostBuilder ConfigureDefaults(this IUnityHostBuilder builder, string[] args)
         {
             builder.UseContentRoot(Application.dataPath);
             builder.ConfigureHostConfiguration(config =>

@@ -5,23 +5,32 @@ using UnityEngine;
 
 namespace Microsoft.Extensions.Hosting.Unity
 {
-    internal class UnityCollectionBuilder : IMonoObjectsBuilder
+    internal class UnityObjectsConfigurator : IUnityObjectsConfigurator
     {
         // ReSharper disable once ArrangeObjectCreationWhenTypeEvident
-        private readonly List<Action<HostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<HostBuilderContext, IServiceCollection>>();
+        private readonly List<Action<HostBuilderContext, IServiceCollection>> _configureActions = new List<Action<HostBuilderContext, IServiceCollection>>();
         private readonly string _serviceInjectionMethodName;
 
-        public IEnumerable<Action<HostBuilderContext, IServiceCollection>> ConfigureActions => _configureServicesActions;
-
-        public UnityCollectionBuilder(string serviceInjectionMethodName)
+        public UnityObjectsConfigurator(string serviceInjectionMethodName)
         {
             _serviceInjectionMethodName = serviceInjectionMethodName;
         }
 
-        /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourSingleton(MonoBehaviour component, Type type = default, bool useHostLifetime = false)
+        /// <note>
+        /// Call this before building the host.
+        /// </note>
+        public void Configure(HostBuilderContext context, IServiceCollection services)
         {
-            _configureServicesActions.Add((context, services) =>
+            foreach (var action in _configureActions)
+            {
+                action.Invoke(context, services);
+            }
+        }
+
+        /// <inheritdoc/>
+        public IUnityObjectsConfigurator AddMonoBehaviourSingleton(MonoBehaviour component, Type type = default, bool useHostLifetime = false)
+        {
+            _configureActions.Add((context, services) =>
             {
                 if (!component)
                     throw new ArgumentNullException(nameof(component), "Component is missing");
@@ -43,9 +52,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourSingleton<T>() where T : MonoBehaviour
+        public IUnityObjectsConfigurator AddMonoBehaviourSingleton<T>() where T : MonoBehaviour
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 services.AddSingleton<T>(provider =>
                 {
@@ -62,9 +71,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddDetachedMonoBehaviourSingleton<T>() where T : MonoBehaviour
+        public IUnityObjectsConfigurator AddDetachedMonoBehaviourSingleton<T>() where T : MonoBehaviour
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 services.AddSingleton<T>(provider =>
                 {
@@ -81,9 +90,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourHostedService<T>() where T : MonoBehaviour, IHostedService
+        public IUnityObjectsConfigurator AddMonoBehaviourHostedService<T>() where T : MonoBehaviour, IHostedService
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 services.AddHostedService<T, T>(provider =>
                 {
@@ -104,9 +113,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourHostedService<T, TImpl>() where T : MonoBehaviour, IHostedService where TImpl : MonoBehaviour, T
+        public IUnityObjectsConfigurator AddMonoBehaviourHostedService<T, TImpl>() where T : MonoBehaviour, IHostedService where TImpl : MonoBehaviour, T
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 services.AddHostedService<T, TImpl>(provider =>
                 {
@@ -123,9 +132,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where T : class where TImpl : MonoBehaviour, T
+        public IUnityObjectsConfigurator AddMonoBehaviourSingleton<T, TImpl>(TImpl component, bool useHostLifetime = false) where T : class where TImpl : MonoBehaviour, T
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 if (!component)
                     throw new ArgumentNullException(nameof(component), "Component is missing");
@@ -145,9 +154,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourSingleton<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
+        public IUnityObjectsConfigurator AddMonoBehaviourSingleton<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 services.AddSingleton<T, TImpl>(provider =>
                 {
@@ -164,9 +173,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourTransient<T>() where T : MonoBehaviour
+        public IUnityObjectsConfigurator AddMonoBehaviourTransient<T>() where T : MonoBehaviour
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 services.AddTransient<T>(provider =>
                 {
@@ -183,9 +192,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourTransient<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
+        public IUnityObjectsConfigurator AddMonoBehaviourTransient<T, TImpl>() where T : class where TImpl : MonoBehaviour, T
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 services.AddTransient<T, TImpl>(provider =>
                 {
@@ -202,9 +211,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddScriptableObjectSingleton(ScriptableObject scriptableObject, Type type)
+        public IUnityObjectsConfigurator AddScriptableObjectSingleton(ScriptableObject scriptableObject, Type type)
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 if (!scriptableObject)
                     throw new ArgumentNullException(nameof(scriptableObject), "ScriptableObject is missing");
@@ -221,9 +230,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddScriptableObjectSingleton<T>(T scriptableObject) where T : ScriptableObject
+        public IUnityObjectsConfigurator AddScriptableObjectSingleton<T>(T scriptableObject) where T : ScriptableObject
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 if (!scriptableObject)
                     throw new ArgumentNullException(nameof(scriptableObject), "ScriptableObject is missing");
@@ -240,9 +249,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddScriptableObjectSingleton<T, TImpl>(TImpl scriptableObject) where T : class where TImpl : ScriptableObject, T
+        public IUnityObjectsConfigurator AddScriptableObjectSingleton<T, TImpl>(TImpl scriptableObject) where T : class where TImpl : ScriptableObject, T
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 if (!scriptableObject)
                     throw new ArgumentNullException(nameof(scriptableObject), "ScriptableObject is missing");
@@ -259,9 +268,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourPrefabSingleton<T>(string resourcesPath) where T : MonoBehaviour
+        public IUnityObjectsConfigurator AddMonoBehaviourPrefabSingleton<T>(string resourcesPath) where T : MonoBehaviour
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 if (string.IsNullOrWhiteSpace(resourcesPath))
                     throw new ArgumentNullException(nameof(resourcesPath), "Resources path is missing");
@@ -284,9 +293,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourPrefabTransient<T>(string resourcesPath) where T : MonoBehaviour
+        public IUnityObjectsConfigurator AddMonoBehaviourPrefabTransient<T>(string resourcesPath) where T : MonoBehaviour
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 if (string.IsNullOrWhiteSpace(resourcesPath))
                     throw new ArgumentNullException(nameof(resourcesPath), "Resources path is missing");
@@ -308,9 +317,9 @@ namespace Microsoft.Extensions.Hosting.Unity
         }
 
         /// <inheritdoc/>
-        public IMonoObjectsBuilder AddMonoBehaviourPrefabScoped<T>(string resourcesPath) where T : MonoBehaviour
+        public IUnityObjectsConfigurator AddMonoBehaviourPrefabScoped<T>(string resourcesPath) where T : MonoBehaviour
         {
-            _configureServicesActions.Add((context, services) =>
+            _configureActions.Add((context, services) =>
             {
                 if (string.IsNullOrWhiteSpace(resourcesPath))
                     throw new ArgumentNullException(nameof(resourcesPath), "Resources path is missing");
