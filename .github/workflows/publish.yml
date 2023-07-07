@@ -20,6 +20,6 @@ jobs:
        registry-url: https://registry.npmjs.org/
  
    # Publish to npm
-   - run: cd Packages/com.blacksmallriver.generic-host-unity/ && npm publish --access public
+   - run: cd Packages/com.cmdexecutor.dotnet-generic-host && npm publish --access public
      env:
        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
