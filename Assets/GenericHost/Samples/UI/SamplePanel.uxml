@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="Root" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); justify-content: center; align-self: stretch;">
+        <ui:VisualElement name="Header" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); align-items: center; align-self: auto; justify-content: flex-start; flex-direction: column; height: 15%;">
+            <ui:Label tabindex="-1" text="Label" display-tooltip-when-elided="true" name="info-label" style="color: rgb(202, 199, 199); text-shadow: 2px 2px 0 rgb(0, 0, 0); font-size: 18px;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Content" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); align-items: stretch; justify-content: flex-start; flex-direction: row; height: 85%;">
+            <ui:VisualElement name="LeftPanel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); margin-left: 10px; margin-right: 10px; margin-top: 10px; margin-bottom: 10px; align-items: flex-start; align-self: auto; justify-content: flex-start;">
+                <ui:Button text="Spawn moving cube" display-tooltip-when-elided="true" name="spawn-button" />
+                <ui:Button text="Create transient sphere" display-tooltip-when-elided="true" name="transient-button" />
+            </ui:VisualElement>
+            <ui:VisualElement name="RightPanel" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); align-items: flex-end;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
