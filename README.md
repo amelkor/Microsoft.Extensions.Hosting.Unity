@@ -8,8 +8,48 @@ The documentation can be found here: [Tutorial: Use dependency injection in .NET
 
 ## Install
 
-### By git url:
+### By git URL:
 Add `https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git?path=Packages/com.cmdexecutor.dotnet-generic-host` to Unity Package Manager
+
+Or add `"com.cmdexecutor.dotnet-generic-host": "https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity.git?path=Packages/com.cmdexecutor.dotnet-generic-host"` to `Packages/manifest.json`.
+
+### By OpenUPM
+
+The package is available on the [openupm registry](https://openupm.com). It's recommended to install it via [openupm-cli](https://github.com/openupm/openupm-cli).
+
+```
+openupm add com.cmdexecutor.dotnet-generic-host
+```
+
+Or add scoped registry to `Packages/manifest.json`
+
+```json
+    "scopedRegistries": [
+        {
+            "name": "package.openupm.com",
+            "url": "https://package.openupm.com",
+            "scopes": [
+                "com.cmdexecutor.dotnet-generic-host"
+            ]
+        }
+    ],
+```
+
+### By npmjs
+
+Add scoped registry to `Packages/manifest.json`
+
+```json
+    "scopedRegistries": [
+        {
+            "name": "npmjs.com",
+            "url": "https://registry.npmjs.org",
+            "scopes": [
+                "com.cmdexecutor.dotnet-generic-host"
+            ]
+        }
+    ],
+```
 
 ## Getting started
 
