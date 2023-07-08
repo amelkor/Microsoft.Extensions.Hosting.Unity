@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Patch to npm
 
 # Controls when the action will run.
 on:
