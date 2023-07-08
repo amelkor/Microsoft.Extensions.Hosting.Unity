@@ -1,4 +1,4 @@
-![Preview](Packages/com.cmdexecutor.dotnet-generic-host/Editor/Gizmos/host_service_icon.png)
+![Preview](Editor/Gizmos/host_service_icon.png)
  
 [![Twitter Follow](https://img.shields.io/twitter/follow/cmdexecutor?color=blue&label=Follow%20on%20Twitter&logo=%20&logoColor=%20&style=flat-square)](https://twitter.com/cmdexecutor)
 
@@ -183,4 +183,4 @@ In case if `Host` needs to be composed manually, a minimal configuration could b
 
 ## Licensing
 - The asset: MIT License, see  [LICENSE.md](LICENSE.md) for more information.
-- .NET libraries: MIT License, see  [Runtime/lib/LICENSE.md](Packages/com.cmdexecutor.dotnet-generic-host/Runtime/lib/LICENSE.txt) for more information.
+- .NET libraries: MIT License, see  [Runtime/lib/LICENSE.md](Runtime/lib/LICENSE.txt) for more information.
