@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -30,11 +31,13 @@ namespace GenericHost.Samples
             }
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Delaying MonoHostedService for 3 seconds");
+            await UniTask.Delay(TimeSpan.FromSeconds(3), cancellationToken: cancellationToken);
+            _logger.LogDebug("After delayeed MonoHostedService");
+
             _ui.InfoText = "MonoHostedService started";
-            
-            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

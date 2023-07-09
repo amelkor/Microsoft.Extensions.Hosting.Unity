@@ -347,7 +347,9 @@ namespace Microsoft.Extensions.Hosting.Unity
                 }
 
                 _isStarted = true;
-                host.Start();
+                
+                // todo GetAwaiter().GetResult() will cause deadlock
+                host.StartAsync();
             }
             catch (Exception)
             {

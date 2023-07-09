@@ -20,9 +20,17 @@ namespace GenericHost.Samples
 
             var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             sphere.transform.SetParent(transform);
-            sphere.AddComponent<Rigidbody>();
+            
+            var rb = sphere.AddComponent<Rigidbody>();
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            rb.AddForce(RandomVector3(Random.Range(10f, 100f)), ForceMode.Impulse);
             
             Destroy(gameObject, 3f);
+        }
+
+        private static Vector3 RandomVector3(float force)
+        {
+            return new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)) * force;
         }
 
         private void OnDestroy()

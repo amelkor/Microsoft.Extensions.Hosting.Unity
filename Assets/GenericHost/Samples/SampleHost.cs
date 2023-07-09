@@ -50,6 +50,8 @@ namespace GenericHost.Samples
         {
             // Register ordinary C# classes
             Debug.Log("ConfigureServices");
+
+            services.AddHostedService<SampleHostedService, SampleHostedService>();
         }
 
         protected override void ConfigureUnityObjects(HostBuilderContext context, IUnityObjectsConfigurator services)
@@ -63,7 +65,7 @@ namespace GenericHost.Samples
             services.AddMonoBehaviourSingleton(sampleUI);
 
             // Register as hosted service (will be resolved and start automatically when host start)
-            services.AddMonoBehaviourHostedService<MonoHostedService>();
+            services.AddMonoBehaviourHostedService<MonoHostedService, MonoHostedService>();
 
             // Creates new instances under HostRoot GameObject
             services.AddMonoBehaviourSingleton<MonoSingleton>();

@@ -78,7 +78,8 @@ namespace Microsoft.Extensions.Hosting.Unity
                 options.ValidateOnBuild = isDevelopment;
             });
 
-            builder.ConfigureServices(services => services.AddSingleton<IHostLifetime, UnityLifetime>());
+            // todo remove after checking UnityLifetime adds in the custom host builder
+            // builder.ConfigureServices(services => services.AddSingleton<IHostLifetime, UnityLifetime>());
 
             return builder;
         }
