@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.Hosting.Unity.Logging
                 }
                 case LogLevel.Trace:
                 {
-                    Debug.Log($"<color=gray>TRACE [{_name}] - {formatter(state, exception)}</color>");
+                    Debug.Log($"<color=grey>TRACE [{_name}] - {formatter(state, exception)}</color>");
                     break;
                 }
                 case LogLevel.Error:
