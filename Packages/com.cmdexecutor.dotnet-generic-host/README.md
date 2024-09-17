@@ -182,5 +182,5 @@ In case if `Host` needs to be composed manually, a minimal configuration could b
 ```
 
 ## Licensing
-- The asset: MIT License, see  [LICENSE.md](LICENSE.md) for more information.
-- .NET libraries: MIT License, see  [Runtime/lib/LICENSE.md](Runtime/lib/LICENSE.txt) for more information.
+- The asset: MIT License, see  [LICENSE.md](https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity/blob/master/Packages/com.cmdexecutor.dotnet-generic-host/README.md) for more information.
+- .NET libraries: MIT License, see  [Runtime/lib/LICENSE.md](https://github.com/amelkor/Microsoft.Extensions.Hosting.Unity/blob/master/Packages/com.cmdexecutor.dotnet-generic-host/Runtime/lib/LICENSE.TXT) for more information.
