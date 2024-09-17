@@ -1,4 +1,6 @@
-The MIT License (MIT)
+https://github.com/dotnet/extensions/blob/main/LICENSE
+
+The MIT License (MIT) 
 
 Copyright (c) .NET Foundation and Contributors
 
